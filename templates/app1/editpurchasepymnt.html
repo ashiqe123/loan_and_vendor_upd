@@ -1,0 +1,609 @@
+{% extends 'app1/base.html' %}
+{% block body %}
+    {% load static %}
+    <style>
+        .center-align {
+          text-align: center;
+        }
+      
+        .center-input {
+          margin: 0 auto;
+        }
+      
+        .narrow-input {
+          max-width: 600px; /* Adjust the maximum width as needed */
+        }
+      </style>
+    <div class="page-content">
+        <div class="card radius-15">
+            <div class="card-body">
+                <div class="card-title">
+                    <center><h2 class="mb-0" style="text-transform: uppercase;;">EDIT PAYMENT</h2></center>
+                </div>
+                <hr/>
+            </div>
+        </div>
+        <form action="editpurchasepymnt/{{ paymt.pymntid }} {{paymt1.pymnt}}" method="post" class="post-form">
+            {% csrf_token %}
+            <div class="card radius-15">
+                <div class="card-body">
+                    <div class="row">
+                    
+                        <div class="col-md-3 mt-2">
+                            <label for="">Vendor</label>
+                            <div class="d-flex">
+                                <select name="vendor" id="select" class="custom-select">
+                                    <option value="{{ paymt.vendor }}">{{ paymt.vendor }}</option>
+                                    {% for v in vndr %}
+                                    <option value="{{ v.firstname }} {{ v.lastname }}">{{ v.firstname }} {{ v.lastname }}</option>
+                                    {% endfor %}
+                                </select>
+                                
+                            </div>   
+                        </div>
+                       
+                        <div class="col-md-3 mt-2" id="emailField" >
+                            <label for="">E mail</label>
+                            <input type="text" name="email" id="email" class="form-control" value="{{ paymt.email }}">
+                        </div> 
+
+                        <div class="col-md-3 mt-2" id="gstTypeField" >
+                            <label for="">GST Treatment</label>
+                            <input type="text" name="gsttype" id="gsttype" class="form-control" value="{{ paymt.gst_treatment }}">
+                        </div>
+
+                        <div class="col-md-3 mt-2" id="gstinField" {% if not paymt.gst_number %} style="display: none;" {% endif %}>
+                            <label for="">GST Number</label>
+                            <input type="text" name="gstin" id="gstin" class="form-control" value="{{ paymt.gst_number }}">
+                        </div>
+                        
+                    </div>
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-4 mt-3">
+                            <label for="">Payment Date</label>
+                            <input type="date" name="paymentdate"  class="form-control" value="{{ paymt.paymentdate | date:'Y-m-d' }}" required>
+                        </div>
+                    
+                        <div class="col-md-4 mt-3">
+                            <label for="">Reference</label>
+                            <input type="text" name="reference" value="{{ paymt.reference }}" class="form-control" readonly>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <input type="text" id="newmethod" onchange="addtemopt(this)" class="form-control"
+                                       style="display: none;">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mt-3">
+                            <label for="">Payment Method</label>
+                            <div class="d-flex">
+                                <select name="paymentmethod" id="paymeth" class="form-control" style="width: 87%">
+                                    <option value="{{ paymt.paymentmethod }}">{{ paymt.paymentmethod }}</option>
+                                    
+                                    <option value="Cash">Cash</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="UPI">UPI</option>
+                                    {% for v in bank %}
+                                        <option value="{{ v.bank_name }}">{{ v.bank_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        </div>
+                        <div class="row">
+                        <div class="col-md-4 mt-3">
+
+
+                            <div style="display:none;"  id="chequediv">
+                                <label class="col-form-label" >Cheque ID</label>
+                                <input type="text" class="form-control" name="cheque_id" id="cheque_id" value="{{ paymt.cheque_number }}" placeholder="Enter Cheque ID">
+                            </div>
+                            
+                            <div style="display:none;" id="upidiv">
+                                <label class="col-form-label" >UPI ID</label>
+                                <input type="text" class="form-control" name="upi_id" id="upi_id" placeholder="Enter UPI ID" value="{{ paymt.upi_id }}">
+                            </div>
+    
+                            <div style="display:none;" id="bnkdiv">
+                                <label class="col-form-label" >Bank Account</label>
+                                <input type="text" class="form-control" name="bnk_id" id="bnk_id" value="{{ paymt.account_number }}" style="background-color: #43596c;" readonly>
+                            </div>
+
+
+                        </div>
+
+                    
+
+                    </div>
+                        
+                        
+                    
+                    <br><br>
+
+
+                      <br><br>
+
+                        <div class="row clearfix">
+                            <div class="col-md-12 table-responsive-md">
+                                <table class="table table-bordered table-hover" id="tab_logic" style="background-color: rgba(0,0,0,0.4);">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">#</th>
+                                            <th class="text-center">Date</th>
+                                            <th class="text-center">Bill Number</th>
+                                            <th class="text-center">Bill Amount</th>
+                                            <th class="text-center">Due Date</th>
+                                            <th class="text-center">Balance Due</th>
+                                            <th class="text-center">Payment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id='vendordata'></tbody>
+                                    <tbody id='billdata'>
+                                        {% for p in paymt1 %}
+                                            <tr id='addr1'>
+                                                <td>{{ forloop.counter }}
+                                                    <input type="text" name="id[]" value="{{p.id}}" hidden>
+                                                </td>
+                                                <td><input type="text" name="billdate[]" id="billdate{{forloop.counter}}" value="{{ p.billdate | date:'Y-m-d' }}" class="form-control"/></td>
+                                                <td><input type="text" name='billno[]' id="billno{{forloop.counter}}" value="{{ p.billno }}" class="form-control"/></td>
+                                                <td><input type="text" name='billamount[]' value="{{ p.billamount }}" id="billamount{{forloop.counter}}"
+                                                    class="form-control qty" step="0" min="0"/>
+                                                </td>
+                                                <td><input type="text" name="duedate[]" id="" value="{{ p.duedate }}" class="form-control"/></td>
+                                                <td ><input type="number" name='amountdue[]' id="openbal{{forloop.counter}}" value="{{ p.amountdue }}"
+                                                     class="form-control price" step="0.00" min="0"/>
+                                                </td>
+                                                <td><input type="number" name='payment[]'  id="payment{{forloop.counter}}" placeholder='0.00'
+                                                    class="form-control total" value="{{ p.payments }}"/>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    
+                                    <!-- <tbody id='billdata'></tbody> -->
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row clearfix mt-4">
+                            <div class="col-md-7"></div>
+                            <div class="col-md-5 table-responsive-md">
+                                <table class="table table-bordered table-hover" id="tab_logic_total" style="background-color: rgba(0,0,0,0.4);">
+                                    <tbody>
+                                      
+                                        <tr>
+                                            <th class="text-center">Amount to Apply</th>
+                                            <td class="text-center">
+                                                <input type="number" name="paymentamount" id="amtoapply"
+                                                    value="{{ paymt.paymentamount }}" class="form-control">
+                                            </td>
+                                        </tr>
+                                   
+
+                                    <tr>
+                                        <th class="text-center">Balance amount</th>
+                                        <td class="text-center"><input type="number" name='amtcredit' id="amtcredit"
+                                            placeholder='0.00' class="form-control balance-amount" value="{{ paymt.amtcredit }}">
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-md-10"></div>
+                            <div class="" style="margin-left: 30rem; text-align: center;">
+                                <!-- <button type="submit" name="action" value="draft" class="btn btn-outline-info rounded-pill w-10 text-light">Save as Draft</button>&nbsp; -->
+                                <button type="submit" name="action" value="save"  class="btn btn-outline-info rounded-pill w-10 text-light">Save Changes</button>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-10">
+                                <div class="notices">
+                                    <div class="text-muted">NOTICE:</div>
+                                    <div class="notice text-muted">
+                                        Fin sYs Terms and Conditions Apply
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>      
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $('#date').val(new Date().toJSON().slice(0,10));
+    </script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script>
+        function showinp(divId, element) {
+            if (element.value == 'Add New') {
+                document.getElementById(divId).style.display = 'block';
+            } else {
+                document.getElementById(divId).style.display = 'none';
+            }
+        }
+
+        
+
+        function addtemopt(element) {
+            var opt = document.getElementById('newmth');
+            if (element.value) {
+                opt.value = element.value;
+                opt.innerHTML = element.value;
+            } else {
+                pass
+            }
+        }
+
+
+        
+    </script>
+
+    <script>
+        function updateCalculations() {
+            var totalPayment = 0;
+            var totalAmountDue = 0;
+    
+            // Calculate total payment
+            $('[id^=payment]').each(function () {
+                totalPayment += parseFloat($(this).val()) || 0;
+            });
+    
+            // Calculate total amount due from vendor data
+            $('#tab_logic #vendordata input[name="amountdue[]"]').each(function () {
+                totalAmountDue += parseFloat($(this).val()) || 0;
+            });
+    
+            // Calculate total amount due from bill data
+            $('#tab_logic #billdata input[name="amountdue[]"]').each(function () {
+                totalAmountDue += parseFloat($(this).val()) || 0;
+            });
+    
+            var balanceAmount = totalAmountDue - totalPayment;
+    
+            $('#amtoapply').val(totalPayment.toFixed(2));
+            $('#amtcredit').val(balanceAmount.toFixed(2));
+        }
+    
+        $(document).ready(function () {
+            // Call the function on page load
+            updateCalculations();
+    
+            $("#select").change(function () {
+                const select = $(this).val();
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'getbilldata' %}",
+                    data: {
+                        'select': select,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success: function (response) {
+                        console.log(response);
+    
+                        // Clear existing rows
+                        $('#tab_logic #vendordata').empty();
+                        $('#tab_logic #billdata').empty();
+    
+                        if (response.opb != null) {
+                            // Display opening balance bill
+                            $('#tab_logic #vendordata').append(
+                                `<tr id='addr1'>
+                                    <td>1</td>
+                                    <td><input type="hidden" name='payment1[]' value="vendor_balance"/><input type="text" name="billdate[]" value="${response.date}" class="form-control"/></td>
+                                    <td><input type="hidden" name='payment2[]' value="${response.vendorid}" ><input type="text" name='billno[]' value="Vendor Opening Balance" class="form-control"/></td>
+                                    <td><input type="text" name='billamount[]' value="${response.opb}" class="form-control qty" step="0" min="0"/></td>
+                                    <td><input type="text" name="duedate[]" value="${response.date}" class="form-control"/></td>
+                                    <td><input type="number" name='amountdue[]' value="${response.obdue}" class="form-control price" step="0.00" min="0"/></td>
+                                    <td><input type="number" id='payment_0' name='payment[]' onchange="addagain()" class="form-control total" value="0" /></td>
+                                </tr>`
+                            );
+                        }
+        
+                        // Display regular purchase bills
+                        for (let i = 0; i < response.purchase_bills.length; i++) {
+                            $('#tab_logic #billdata').append(
+                                `<tr id='addr${i + 2}'>
+                                    <td>${i + 2}</td>
+    
+                                    <td><input type="hidden" name='payment1[]' value="purchasebill_balance"/><input type="text" name="billdate[]" value="${response.purchase_bills[i].date}" class="form-control"/></td>
+                                    <td><input type="hidden" name='payment2[]' value="${response.purchase_bills[i].billid}" ><input type="text" name='billno[]' value="${response.purchase_bills[i].bill_no}" class="form-control"/></td>
+                                    <td><input type="text" name='billamount[]' value="${response.purchase_bills[i].grand_total}" class="form-control qty" step="0" min="0"/></td>
+                                    <td><input type="text" name="duedate[]" value="${response.purchase_bills[i].deliver_date}" class="form-control"/></td>
+                                    <td><input type="number" name='amountdue[]' value="${response.purchase_bills[i].balance_amount}" class="form-control price" step="0.00" min="0"/></td>
+                                    <td><input type="number" id='payment_${i + 1}' name='payment[]' onchange="addagain()" value="0" class="form-control total"/></td>
+                                </tr>`
+                            );
+                        } 
+                        // Calculate and update amounts
+                        updateCalculations();
+                    }
+                });
+            });
+    
+            // Call the function when any payment field changes
+            $('#tab_logic').on('change', '[id^=payment]', function () {
+                updateCalculations();
+            });
+        });
+    </script>
+    
+    
+   
+
+
+
+<script>
+    $(document).ready(function () {
+        $('#select').on('change', function () {
+            var select = $('#select').val();
+            $.ajax({
+                type: "GET",
+                url: "{% url 'getvendordata3' %}",
+                data: {
+                    id: select
+                },
+                success: function (response) {
+                    var json_data = JSON.parse(response);
+                    if (json_data.length > 0) {
+                        var vendorData = json_data[0]; // Assuming you are expecting one vendor data
+    
+                        $('#email').val(vendorData.email);
+                        $('#mailaddr').val(vendorData.street + '\n' + vendorData.city + '\n' + vendorData.state + '\n' + vendorData.pincode + '\n' + vendorData.country);
+    
+                        // Show email and GST treatment fields
+                        $('#emailField, #gstTypeField').show();
+    
+                        // Set values for email and GST treatment fields
+                        $('#email').val(vendorData.email);
+                        $('#gsttype').val(vendorData.gsttype);
+    
+                        // Check if GST Number has a value
+                        if (vendorData.gstin && vendorData.gstin.trim() !== '') {
+                            // Set the GST Number field to the value and show the field
+                            $('#gstin').val(vendorData.gstin);
+                            $('#gstinField').show();
+                        } else {
+                            // If GST Number is empty or contains only whitespace, hide the field
+                            $('#gstin').val('');
+                            $('#gstinField').hide();
+                        }
+                    } else {
+                        // Handle the case where no data was found for the selected ID.
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Handle the AJAX error.
+                    console.error("AJAX Error:", error);
+                }
+            });
+        });
+    });
+    </script>
+
+    
+    
+    
+
+    
+
+    
+    <script>
+        function updateAmountToApply() {
+            var totalPayment = 0;
+    
+            for (var i = 0; i <= j; i++) {
+                var paymentField = document.getElementById('payment' + i);
+                
+                if (paymentField) {
+                    var payment = parseFloat(paymentField.value);
+                    if (!isNaN(payment)) {
+                        totalPayment += payment;
+                    }
+                }
+            }
+    
+            // Update "Amount to Apply" field with the total payment
+            var amountToApplyField = document.getElementById('amtoapply');
+            
+            if (amountToApplyField) {
+                amountToApplyField.value = totalPayment;
+            }
+        }
+    
+        // Add event listeners to the payment fields to trigger the update
+        for (var i = 0; i <= j; i++) {
+            var paymentField = document.getElementById('payment' + i);
+            if (paymentField) {
+                paymentField.addEventListener('input', updateAmountToApply);
+            }
+        }
+    </script>
+    
+        <!-- <script>
+            document.getElementById("paymentForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent the default form submission
+                
+                // Get the selected payment type
+                var selectedPaymentType = document.querySelector('input[name="paid_through"]:checked').value;
+        
+                // Get the values of other form fields (bank, cheque, upi)
+                var bankValue = document.getElementById("bankName").value;
+                var chequeValue = document.getElementById("chequeNumber").value;
+                var upiValue = document.getElementById("upiId").value;
+        
+                // Display the values (you can modify this part)
+                console.log("Selected Payment Type: " + selectedPaymentType);
+                console.log("Bank Value: " + bankValue);
+                console.log("Cheque Value: " + chequeValue);
+                console.log("UPI Value: " + upiValue);
+            });
+        </script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var gstinField = document.getElementById("gstinField");
+                var gstinInput = document.getElementById("gstin");
+        
+                if (gstinInput.value.trim() === "") {
+                    // If GST Number field is empty, hide the corresponding div
+                    gstinField.style.display = "none";
+                }
+            });
+        </script> -->
+        
+        <!-- <script>
+            function showFieldsForPayment(paymentType) {
+                var bankFields = document.getElementById("bankFields");
+                var chequeFields = document.getElementById("chequeFields");
+                var upiFields = document.getElementById("upiFields");
+        
+                bankFields.style.display = (paymentType === "bank") ? "block" : "none";
+                chequeFields.style.display = (paymentType === "cheque") ? "block" : "none";
+                upiFields.style.display = (paymentType === "upi") ? "block" : "none";
+            }
+        
+            window.onload = function() {
+                var paymentRadios = document.getElementsByName("paid_through");
+                var bankFields = document.getElementById("bankFields");
+                var chequeFields = document.getElementById("chequeFields");
+                var upiFields = document.getElementById("upiFields");
+        
+                bankFields.style.display = "none"; // Initially hide the bank fields
+                chequeFields.style.display = "none"; // Initially hide the cheque fields
+                upiFields.style.display = "none"; // Initially hide the upi fields
+        
+                paymentRadios.forEach(function(radio) {
+                    radio.addEventListener('change', function() {
+                        showFieldsForPayment(this.value);
+                    });
+                });
+            }
+        </script> -->
+        <!-- <script>
+            
+            const cashRadio = document.getElementById("cashRadio");
+            const bankRadio = document.getElementById("bankRadio");
+            const chequeRadio = document.getElementById("chequeRadio");
+            const upiRadio = document.getElementById("upiRadio");
+            const bankFields = document.getElementById("bankFields");
+            const chequeFields = document.getElementById("chequeFields");
+            const upiFields = document.getElementById("upiFields");
+        
+            // Function to show/hide fields based on the selected radio button
+            function updateFieldVisibility() {
+                if (cashRadio.checked) {
+                    bankFields.style.display = "none";
+                    chequeFields.style.display = "none";
+                    upiFields.style.display = "none";
+                } else if (bankRadio.checked) {
+                    bankFields.style.display = "block";
+                    chequeFields.style.display = "none";
+                    upiFields.style.display = "none";
+                } else if (chequeRadio.checked) {
+                    bankFields.style.display = "none";
+                    chequeFields.style.display = "block";
+                    upiFields.style.display = "none";
+                } else if (upiRadio.checked) {
+                    bankFields.style.display = "none";
+                    chequeFields.style.display = "none";
+                    upiFields.style.display = "block";
+                }
+            }
+        
+            // Add event listeners to radio buttons
+            cashRadio.addEventListener("click", updateFieldVisibility);
+            bankRadio.addEventListener("click", updateFieldVisibility);
+            chequeRadio.addEventListener("click", updateFieldVisibility);
+            upiRadio.addEventListener("click", updateFieldVisibility);
+        
+            // Call the function to set the initial field visibility
+            updateFieldVisibility();
+        </script> -->
+
+<!-- Include this JavaScript in your HTML template -->
+
+
+<!-- <script>
+    function showPaymentFields(paymentMethod) {
+        $('.pymnt-methd-inp').addClass('d-none').removeClass('d-flex');
+        if (paymentMethod === 'Bank Transfer') {
+            $('#bank-field').removeClass('d-none').addClass('d-flex');
+            $('#account-number-field').removeClass('d-none').addClass('d-flex');
+        } else if (paymentMethod === 'Cheque') {
+            $('#cheq-field').removeClass('d-none').addClass('d-flex');
+        } else if (paymentMethod === 'Credit Card') {
+            $('#cc-field').removeClass('d-none').addClass('d-flex');
+        } else if (paymentMethod === 'UPI') {
+            $('#upi-field').removeClass('d-none').addClass('d-flex');
+        }
+            
+    }
+
+    $('#paymeth').on('change', function() {
+        var selectedPaymentMethod = $(this).val();
+        showPaymentFields(selectedPaymentMethod);
+    });
+
+    // Initialize the visibility of fields based on the initial value
+    showPaymentFields($('#paymeth').val());
+</script> -->
+
+<script>
+    $(document).ready(function() {
+        $("#paymeth").change(function() {
+            var selectedPaymentMethod = $(this).val();
+            togglePaymentFields(selectedPaymentMethod);
+        });
+
+        // Initialize the visibility of fields based on the initial value
+        togglePaymentFields($('#paymeth').val());
+    });
+
+    function togglePaymentFields(paymentMethod) {
+        $('.payment-fields').hide();
+
+        if (paymentMethod === 'Cash') {
+            $('#chequediv').hide();
+            $('#upidiv').hide();
+            $('#bnkdiv').hide();
+        } else if (paymentMethod === 'Cheque') {
+            $('#chequediv').show();
+            $('#upidiv').hide();
+            $('#bnkdiv').hide();
+        } else if (paymentMethod === 'UPI') {
+            $('#chequediv').hide();
+            $('#upidiv').show();
+            $('#bnkdiv').hide();
+        } else {
+            // It's a bank, show the bank field
+            $('#chequediv').hide();
+            $('#upidiv').hide();
+            $('#bnkdiv').show();
+
+            $.ajax({
+                type: "GET",
+                url: "{% url 'get_bankdata' %}",
+                data: {
+                    id: paymentMethod,
+                },
+                success: function(response) {
+                    document.getElementById('cheque_id').value = null;
+                    document.getElementById('upi_id').value = null;
+                    document.getElementById("bnk_id").value = response.account_number;
+                }
+            });
+        }
+    }
+</script>
+
+   
+{% endblock %}
