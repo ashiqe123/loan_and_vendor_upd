@@ -106,15 +106,15 @@
         <div class="col-md-2"></div>
         <div class="col-md-5" style="display:none;"  id="chequedi">
           <label class="col-form-label" >Cheque No</label>
-          <input type="text" class="form-control" name="cheque_id" value="{{rbill.cheque_no}}" id="cheque_i" placeholder="Enter Cheque No">
+          <input type="text" class="form-control" name="recieved_cheque_id" value="{{rbill.cheque_no}}" id="cheque_i" placeholder="Enter Cheque No">
       </div>
       <div class="col-md-5"  style="display:none;" id="upidi">
           <label class="col-form-label" >UPI ID</label>
-          <input type="text" class="form-control" name="upi_id" value="{{rbill.upi_no}}" id="upi_i" placeholder="Enter UPI ID">
+          <input type="text" class="form-control" name="recieved_upi_id" value="{{rbill.upi_no}}" id="upi_i" placeholder="Enter UPI ID">
       </div>
       <div class="col-md-5"  style="display:none;" id="bnkdi">
           <label class="col-form-label" >Bank Account</label>
-          <input type="text" class="form-control" name="bnk_id" id="bnk_i" style="background-color: #43596c;" readonly>
+          <input type="text" class="form-control" name="recieved_bnk_id" id="bnk_i" style="background-color: #43596c;" readonly>
       </div>
     </div>
     
@@ -133,7 +133,7 @@
     <div class="row">
         <div class="col-md-5 p-2">PROCESSING PAID FROM</div>
         <div class="col-md-2"></div>
-        <div class="col-md-5">INTREST RATE %</div>
+        <div class="col-md-5">INTREST AMOUNT</div>
     </div>
     
     <div class="row">
@@ -149,22 +149,22 @@
             </div>
         <div class="col-md-2"></div>
             <div class="col-md-5 p-2">
-              <input class="form-control" type="text" placeholder="%" name="intrest" value="%">
+              <input class="form-control" type="text" placeholder="0" name="intrest" value="0">
             </div>
       </div>
     
    <div class="row">
     <div class="col-md-5" style="display:none;"  id="chequediv">
       <label class="col-form-label" >Cheque No</label>
-      <input type="text" class="form-control" name="cheque_id" value="{{rbill.cheque_no}}" id="cheque_id" placeholder="Enter Cheque No">
+      <input type="text" class="form-control" name="paid_cheque_id" value="" id="cheque_id" placeholder="Enter Cheque No">
   </div>
   <div class="col-md-5"  style="display:none;" id="upidiv">
       <label class="col-form-label" >UPI ID</label>
-      <input type="text" class="form-control" name="upi_id" value="{{rbill.upi_no}}" id="upi_id" placeholder="Enter UPI ID">
+      <input type="text" class="form-control" name="paid_upi_id" value="" id="upi_id" placeholder="Enter UPI ID">
   </div>
   <div class="col-md-5"  style="display:none;" id="bnkdiv">
       <label class="col-form-label" >Bank Account</label>
-      <input type="text" class="form-control" name="bnk_id" id="bnk_id" style="background-color: #43596c;" readonly>
+      <input type="text" class="form-control" name="paid_bnk_id" id="bnk_id" style="background-color: #43596c;" readonly>
   </div>
    </div>
 
@@ -305,8 +305,8 @@ value="No">No</option>
         <div style="width: 45%;float: right;" class="ml-5">
           <h3>Bank Account Form</h3>
           <div class="form-group">
-            <label for="accountName">Account Name</label>
-            <input type="text" class="form-control" id="account_name" placeholder="Account Name" name="account_name">
+            <label for="accountName">Holder Name</label>
+            <input type="text" class="form-control" id="account_name" placeholder="Holder Name" name="account_name">
           </div>
 
           <div class="form-group">
@@ -363,12 +363,12 @@ value="No">No</option>
             </div>
             
             <div class="form-group">
-              <label for="address">Mailing Address</label>
+              <label for="address"> Address</label>
               <textarea class="form-control" id="address" rows="3" name="address"></textarea>
             </div>
             
             <div class="form-group">
-              <label for="mailingCountry">Mailing Country</label>
+              <label for="mailingCountry"> Country</label>
               <select class="form-control" id="country" name="country">
                 <option>Select Country</option>
   <option value="AF">Afghanistan</option>
@@ -636,7 +636,7 @@ value="No">No</option>
               
             <label
              
-            for="mailingState">Mailing State</label>
+            for="mailingState"> State</label>
             
               
             <select
@@ -691,7 +691,7 @@ value="No">No</option>
               
             <label
              
-            for="mailingPin">Mailing Pin</label>
+            for="mailingPin"> Pin</label>
             
               
             <input
@@ -705,7 +705,7 @@ value="No">No</option>
             <h3>Opening Balance Form</h3>
             <div class="form-group">
               <label for="date">Date</label>
-              <input type="date" class="form-control" id="date" placeholder="Opening Balance Date" name="date">
+              <input type="date" class="form-control" id="date" value="{{current_date}}" placeholder="Opening Balance Date" name="date">
             </div>
             
             <div class="form-group">

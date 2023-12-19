@@ -2401,8 +2401,13 @@ class loan_account(models.Model):
     balance=models.IntegerField(default=0)    
     date=models.DateField(blank=True,null=True)
     recieved_amount=models.IntegerField(default=0)   
-    
-    
+    paid_cheque = models.TextField(max_length=100,null=True,blank=True)
+    paid_upi = models.TextField(max_length=100,null=True,blank=True)
+    paid_bank_acc_number = models.TextField(max_length=100,null=True,blank=True)
+
+    recieved_cheque = models.TextField(max_length=100,null=True,blank=True)
+    recieved_upi = models.TextField(max_length=100,null=True,blank=True)
+    bank_acc_number = models.TextField(max_length=100,null=True,blank=True)
 class loan_transaction(models.Model):
     bank_type=models.TextField(max_length=100)
     from_trans=models.TextField(max_length=100)
