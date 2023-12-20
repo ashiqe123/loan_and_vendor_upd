@@ -48205,6 +48205,8 @@ def edit_loan(request,id):
     loan=loan_account.objects.get(id=id)
     bank=bankings_G.objects.filter(cid=cid)
     accounts=BankAccount.objects.all()
+    print('loannnnn')
+    print(loan.recieced_bank)
     return render(request,'app1/loan_edit.html',{'loan':loan,'cmp1':cid,'bank':bank,'accounts':accounts})
     
     
@@ -48240,8 +48242,19 @@ def edit_loan_account(request, id):
         loan.account_name = request.POST.get('acc_name')
         loan.account_number = request.POST.get('acc_number')
         loan.lenderbank = request.POST.get('lender')
-        loan.recieced_bank = request.POST.get('received')
+        loan.recieced_bank = request.POST.get('recieved')
+        i=request.POST.get('recieved')
+        print(i)
         loan.paid = request.POST.get('paid')
+        print(loan.paid)
+        loan.paid_cheque = request.POST.get('recieved_cheque_id')
+        loan.paid_upi = request.POST.get('recieved_upi_id')
+        loan.paid_bank_acc_number = request.POST.get('recieved_bnk_id')
+
+        loan.recieved_cheque = request.POST.get('paid_cheque_id')
+        loan.recieved_upi = request.POST.get('paid_upi_id')
+        loan.bank_acc_number = request.POST.get('paid_bnk_id')
+
         loan.intrest = request.POST.get('intrest')
         loan.term = request.POST.get('term')
         loan.loan_amount = int(request.POST.get('balance'))
@@ -48278,11 +48291,29 @@ def edit_loan_account(request, id):
             print('reciec')
             print(cid.cash)
             cid.save()
+        elif loan.recieced_bank == 'upi':
+            loan.recieced_bank = 'cheque'
+        elif loan.recieced_bank == 'cheque':
+            loan.recieced_bank = 'upi'
         else:
             received = bankings_G.objects.get(bankname=loan.recieced_bank)
             received.balance += loan.received_amount
             received.save()
 
+        if loan.paid == 'cash':
+              # Add the new value
+            cid.cash = loan.received_amount
+            print('reciec')
+            print(cid.cash)
+            cid.save()
+        elif loan.paid == 'upi':
+            loan.paid = 'upi'
+        elif loan.paid == 'cheque':
+            loan.paid = 'cheque'
+        else:
+            received = bankings_G.objects.get(bankname=loan.paid)
+            received.balance += loan.received_amount
+            received.save()
         # Check if paid bank is cash
        
         # Update the loan account fields
@@ -48335,11 +48366,19 @@ def edit_loan_account(request, id):
         loan_id=loan.id
         loans_sum=loan_transaction.objects.filter(loan=loan_id)
         print(loans_sum)
-        total_sum=loans_sum.filter(bank_type__in=["OPENING BAL","PROCESSING FEE"]).aggregate(Sum("loan_amount"))["loan_amount__sum"]
-        emi_sum=loans_sum.filter(bank_type="EMI PAID").aggregate(Sum("loan_amount"))["loan_amount__sum"]
+        total_sum = loans_sum.filter(bank_type__in=["OPENING BAL", "PROCESSING FEE"]).aggregate(Sum("loan_amount"))["loan_amount__sum"]
+        emi_sum = loans_sum.filter(bank_type="EMI PAID").aggregate(Sum("loan_amount"))["loan_amount__sum"]
+
         print(total_sum)
         print(emi_sum)
-        loan.balance = total_sum - emi_sum
+
+        # Handle None values before subtraction
+        if total_sum is not None and emi_sum is not None:
+            loan.balance = total_sum - emi_sum
+        elif total_sum is not None:
+            loan.balance = total_sum
+        else:
+            loan.balance = 0
         loan.save()
         return redirect('loan')
 
@@ -48530,7 +48569,7 @@ def edit_loan_payment(request, id):
         # Create a transaction record
         
 
-        return redirect('loan_list',l)  # Redirect to the appropriate URL after editing
+        return redirect('loan_list',id)  # Redirect to the appropriate URL after editing
 
     return render(request, 'edit_loan_transaction.html', {'loan': loan})
     
@@ -51704,6 +51743,7 @@ def create_loan(request):
 def bankdat(request):
     cmp1 = company.objects.get(id=request.session['uid'])
     bank_name = request.GET.get('id')
+    print(bank_name+ "hdhd")
     bank = bankings_G.objects.get(bankname=bank_name,cid=cmp1)
     data = {'bank': bank.account_number}
     return JsonResponse(data)

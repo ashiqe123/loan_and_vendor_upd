@@ -547,7 +547,7 @@ footer p {
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer; " onclick="Transaction()"> Transaction</a>
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Overview()"> Overview</a>
 
-                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Statment()"> Statement</a>
+                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" href="{% url 'loan_statement' loan.id %}"> Statement</a>
                     </div>
                     <div class="btn-group col-md-2" style="float: right;">
                         <a class=" btn btn-outline-info  text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="ExportToExcel('xlsx')">Export To Excel</a>
@@ -813,7 +813,7 @@ footer p {
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer; " onclick="Transaction()"> Transaction</a>
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Overview()"> Overview</a>
 
-                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Statment()"> Statement</a>
+                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" href="{% url 'loan_statement' loan.id %}"> Statement</a>
                     </div>
                     <div class="btn-group" style="float: right; ">
 
@@ -827,15 +827,15 @@ footer p {
                                     role="button">
                                     Edit
                                 </a>&nbsp;&nbsp;&nbsp;
-                               
-                                <a href=""
+                               {% if loan.status == 'Active' %}
+                                <a href="{% url 'inactive_status' loan.id %}"
                                     class="fa fa-check  btn btn-outline-info  text-grey mt-3 " style="padding: 10px; cursor: pointer;"
                                     role="button">Active</a> &nbsp;&nbsp;&nbsp;
-                                
-                                <a href=""
+                                {% else %}
+                                <a href="{% url 'active_status' loan.id %}"
                                     class=" fa fa-exclamation-triangle  btn btn-outline-info  text-grey mt-3 " style="padding: 10px; cursor: pointer;"
                                     role="button">in-Active</a> &nbsp;&nbsp;&nbsp;
-
+                            {% endif %}
                                 <a href="{% url 'delet_loan' loan.id %}"
                                     class=" fa fa-trash  btn btn-outline-info  text-grey mt-3 mr-2 " style="padding: 10px; cursor: pointer; "
                                     role="button"> Delete</a>
@@ -1197,7 +1197,7 @@ footer p {
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer; " onclick="Transaction()"> Transaction</a>
                         <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Overview()"> Overview</a>
 
-                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" onclick="Statment()"> Statement</a>
+                        <a class="btn btn-outline-info dropdown-toggle   text-grey mt-3 " style="padding: 10px; cursor: pointer;" href="{% url 'loan_statement' loan.id %}"> Statement</a>
                     </div>
                     <div class="btn-group" style="float: right; ">
 
