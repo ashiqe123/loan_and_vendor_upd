@@ -53,9 +53,12 @@
     </div>
 
     <div class="row">
-        <div class="col-md-5 p-2">  <select   name="recieved" class="form-control  text-white" id="">
+        <div class="col-md-5 p-2">  <select   name="recieved" class="form-control  text-white" id="pay">
             <option class="form-control bg-dark text-white" selected value="{{loan_tr.from_trans}}">{{loan_tr.from_trans}}</option>
             <option class="form-control bg-dark text-white" value="cash">CASH</option>
+            <option class="form-control bg-dark text-white" value="upi">UPI</option>
+            <option class="form-control bg-dark text-white" value="cheque">CHEQUE</option>
+
 
             {% for i in bank %}
             <option class="form-control bg-dark text-white" value="{{i.bankname}}">{{i.bankname}}</option>
@@ -64,6 +67,20 @@
         <div class="col-md-2"></div>
         <div class="col-md-5 p-2"></div>
     </div>
+    <div class="row">
+        <div class="col-md-5" style="display:none;"  id="chequedi">
+          <label class="col-form-label" >Cheque No</label>
+          <input type="text" class="form-control" name="paid_cheque_id" value="{{loan_tr.recieved_cheque}}" id="cheque_i" placeholder="Enter Cheque No">
+      </div>
+      <div class="col-md-5"  style="display:none;" id="upidi">
+          <label class="col-form-label" >UPI ID</label>
+          <input type="text" class="form-control" name="paid_upi_id" value="{{loan_tr.recieved_upi}}" id="upi_i" placeholder="Enter UPI ID">
+      </div>
+      <div class="col-md-5"  style="display:none;" id="bnkdi">
+          <label class="col-form-label" >Bank Account</label>
+          <input type="text" class="form-control" name="paid_bnk_id" id="" style="background-color: #43596c;" readonly>
+      </div>
+       </div>
     <div class="row form-inline mt-2">
         <div class="col-md-6">
             <div class="row">
@@ -116,5 +133,75 @@
         totalInput.value = total.toFixed(); // Display total with 2 decimal places
     }
 </script>
-
+<script>
+    $(document).ready(function() {
+      // Function to handle the initial display based on the existing value
+      var initialMethod = $('#pay').val();
+      if (initialMethod === 'cheque') {
+        $('#chequedi').show();
+      } else if (initialMethod === 'upi') {
+        $('#upidi').show();
+      } else if (initialMethod !== 'cash') {
+        $('#bnkdi').show();
+        // Assuming you want to make an AJAX call only when the initial value is a bank
+        $.ajax({
+          type: "GET",
+          url: "{% url 'bankdat' %}",
+          data: {
+            id: initialMethod,
+          },
+          success: function(response) {
+            data = response.bank;
+            document.getElementById('cheque_i').value = null;
+            document.getElementById('upi_i').value = null;
+            document.getElementById("bnk_i").value = data;
+          }
+        });
+      }
+    
+      // Function to handle changes in the select dropdown
+      $("#pay").change(function() {
+        var x = $('#pay').val();
+        if (x === 'cheque') {
+          $('#chequedi').show();
+          $('#upidi').hide();
+          $('#bnkdi').hide();
+          document.getElementById('upi_i').value = null;
+          document.getElementById('bnk_i').value = null;
+        } else if (x === 'upi') {
+          $('#upidi').show();
+          $('#chequedi').hide();
+          $('#bnkdi').hide();
+          document.getElementById('cheque_i').value = null;
+          document.getElementById('bnk_i').value = null;
+        } else if (x !== 'cash') {
+          $('#bnkdi').show();
+          $('#chequedi').hide();
+          $('#upidi').hide();
+          document.getElementById('cheque_i').value = null;
+          document.getElementById('upi_i').value = null;
+          // Assuming you want to make an AJAX call only when the value is a bank
+          $.ajax({
+            type: "GET",
+            url: "{% url 'bankdat' %}",
+            data: {
+              id: x,
+            },
+            success: function(response) {
+              data = response.bank;
+              document.getElementById("bnk_i").value = data;
+            }
+          });
+        } else {
+          $('#chequedi').hide();
+          $('#upidi').hide();
+          $('#bnkdi').hide();
+          document.getElementById('cheque_i').value = null;
+          document.getElementById('upi_i').value = null;
+          document.getElementById('bnk_i').value = null;
+        }
+      });
+    });
+    
+    </script>
 {% endblock %}

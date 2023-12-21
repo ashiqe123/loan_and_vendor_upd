@@ -2422,6 +2422,9 @@ class loan_transaction(models.Model):
     type=models.TextField(max_length=100)
     total = models.IntegerField(default=0)
     
+    recieved_cheque = models.TextField(max_length=100,null=True,blank=True)
+    recieved_upi = models.TextField(max_length=100,null=True,blank=True)
+    bank_acc_number = models.TextField(max_length=100,null=True,blank=True)
     
 class repeatevry(models.Model):
     name = models.CharField(max_length=100)

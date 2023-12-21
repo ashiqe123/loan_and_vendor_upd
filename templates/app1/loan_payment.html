@@ -53,8 +53,13 @@
     </div>
 
     <div class="row">
-        <div class="col-md-5 p-2"> <select   name="recieved" class="form-control  text-white" id="">
+        <div class="col-md-5 p-2"> <select   name="recieved" class="form-control  text-white" id="pay_method">
             <option class="form-control bg-dark text-white" value="cash">CASH</option>
+
+            <option class="form-control bg-dark text-white" value="upi">UPI</option>
+            <option class="form-control bg-dark text-white" value="cheque">CHEQUE</option>
+
+
             {% for i in bank %}
             <option class="form-control bg-dark text-white" value="{{i.bankname}}">{{i.bankname}}</option>
             {% endfor %}
@@ -62,6 +67,20 @@
         <div class="col-md-2"></div>
         <div class="col-md-5 p-2"></div>
     </div>
+    <div class="row">
+        <div class="col-md-5" style="display:none;"  id="chequediv">
+          <label class="col-form-label" >Cheque No</label>
+          <input type="text" class="form-control" name="paid_cheque_id" value="" id="cheque_id" placeholder="Enter Cheque No">
+      </div>
+      <div class="col-md-5"  style="display:none;" id="upidiv">
+          <label class="col-form-label" >UPI ID</label>
+          <input type="text" class="form-control" name="paid_upi_id" value="" id="upi_id" placeholder="Enter UPI ID">
+      </div>
+      <div class="col-md-5"  style="display:none;" id="bnkdiv">
+          <label class="col-form-label" >Bank Account</label>
+          <input type="text" class="form-control" name="paid_bnk_id" id="bnk_id" style="background-color: #43596c;" readonly>
+      </div>
+       </div>
 
     <div class="row mb-5">
         <div class="col-md-8 mt-3"></div>
@@ -98,5 +117,52 @@
         totalInput.value = total.toFixed(); // Display total with 2 decimal places
     }
 </script>
+
+
+
+<script>
+    $(document).ready(function() {
+      $("#pay_method").change(function() {
+        var x=$('#pay_method').val();
+        if(x==='cash'){
+          $('#chequediv').hide()
+          $('#bnkdiv').hide()
+          $('#upidiv').hide()
+          document.getElementById('cheque_id').value=null
+          document.getElementById('upi_id').value=null
+        }else if(x==='cheque'){
+          $('#chequediv').show()
+          $('#bnkdiv').hide()
+          $('#upidiv').hide()
+          document.getElementById('upi_id').value=null
+        }else if(x==='upi'){
+          $('#upidiv').show()
+          $('#bnkdiv').hide()
+          $('#chequediv').hide()
+          document.getElementById('cheque_id').value=null
+        }else{
+          $('#bnkdiv').show()
+          $('#chequediv').hide()
+          $('#upidiv').hide()
+          document.getElementById('cheque_id').value=null
+          document.getElementById('upi_id').value=null
+  
+          $.ajax({
+              type: "GET",
+              url: "{% url 'bankdata' %}",
+              data: {
+                  id: x,
+              },
+              success: function (response) {
+                  data = response.bank
+                  document.getElementById('cheque_id').value=null
+                  document.getElementById('upi_id').value=null
+                  document.getElementById("bnk_id").value = data
+              }
+          });
+        }
+      });
+    });
+  </script>
 
 {% endblock %}

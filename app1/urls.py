@@ -1372,6 +1372,9 @@ urlpatterns = [
 
     #ashiq
     path('bankdat',views.bankdat,name='bankdat'),
-
+    path('additional_loan_approve/<int:id>',views.additional_loan_approve,name='additional_loan_approve'),
+    path('additional_loan_transaction/<int:id>',views.additional_loan_transaction,name='additional_loan_transaction'),
+    path('edit_additional_LOan_transaction/<int:id>',views.edit_additional_LOan_transaction,name='edit_additional_LOan_transaction'),
+    
  
 ]
