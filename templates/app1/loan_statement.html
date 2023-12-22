@@ -25,20 +25,21 @@
                    
         <!-- HTML -->
             <!-- HTML template with date input fields -->
-           <form method='POST'>
-            {% csrf_token %}
-            <input type="date" class="mt-3" id="start_date" name='sdate' value="{{ today_date }}">
-            <span class="ml-2 mr-2 mt-3"> TO </span>
-            <input type="date" class="mt-3" id="end_date" name='edate' value="{{ today_date }}">
-            <input type="submit" value='View'>
-           </form>
-
-
+            <form method='POST' id="dateForm">
+                {% csrf_token %}
+                <input type="date" class="mt-3" id="start_date" name='sdate' value="{{ current_date }}" onchange="updateHiddenFields()">
+                <span class="ml-2 mr-2 mt-3"> TO </span>
+                <input type="date" class="mt-3" id="end_date" name='edate' value="{{ current_date }}" onchange="updateHiddenFields()">
+                <input type="hidden" id="date1" name="FromD" value="{{ current_date }}">
+                <input type="hidden" id="date2" name="ToD" value="{{ current_date }}">
+                <input type="submit" value='View'>
+            </form>
+            
         
 
                 
 
-                            <div class="dropdown  " style="padding: 10px; cursor: pointer; margin-top: -10px;" onclick="uplodfile()">
+                            <div class="dropdown mt-1 " style="padding: 10px; cursor: pointer; margin-top: -10px;" onclick="uplodfile()">
                                 <li  class=" dropdown-toggle fa fa-share-alt "data-toggle="dropdown"> &nbsp;Share
                             </li>
                                 <ul class="dropdown-menu" style="background-color: black;">
@@ -50,8 +51,9 @@
         
                                  
                                     <li style="margin-left: 25px;" >
-                                            <a href="" id="DownloadtoExcel">Export to Excel</a>
-                                    </li>
+                                        <a class="dropdown-item" style="cursor: pointer;" onclick="shareViaWhatsApp()">Whatsapp</a>
+                                        <a class="dropdown-item" style="cursor: pointer;" data-target="#shareBillEmail" data-toggle="modal"  >Email</a>
+                                                        </li>
                                     
                                    
                                   
@@ -60,22 +62,10 @@
                         </div>
                             
                         
-                        <a class="fa fa-print" style="padding: 10px; cursor: pointer;"  href="{% url 'loan_pdf' ids %}" > PDF</a>
-                        <a class="fa fa-print" style="padding: 10px; cursor: pointer;"  onclick="printSpecificArea()" > Print</a>
+                        <a class="fa fa-print mt-3" style="padding: 10px; cursor: pointer;"  href="{% url 'loan_pdf' ids %}" > PDF</a>
+                        <a class="fa fa-print mt-3" style="padding: 10px; cursor: pointer;"  onclick="printSpecificArea()" > Print</a>
         
-                          <div class="dropdown  " style="padding: 10px; cursor: pointer; margin-top: -14px;">
-                            <li  class=" dropdown-toggle  "data-toggle="dropdown"> &nbsp;Convert
-                        </li>
-                            <ul class="dropdown-menu" style="background-color: black;">
-                                {% if loan.status == 'Active' %}
-                                <a class="dropdown-item " href="{% url 'inactive_status' loan.id %}"> &nbsp;IN-ACTIVE </a>
-                                {% else %}
-                                <a class="dropdown-item " href="{% url 'active_status' loan.id %}"> &nbsp;ACTIVE </a>
-                                {% endif %}
-                                
-                            </ul>
-                    </div>
-                    
+                         
                                
                            
                       
@@ -86,6 +76,7 @@
                 </div>
             </div>
         </div>
+
         <script>
             function printSpecificArea() {
                 var printContents = document.getElementById("whatToPrint").innerHTML;
@@ -96,9 +87,60 @@
                 
                 document.body.innerHTML = originalContents;
             }
+
+
+            function shareViaWhatsApp() {
+                    // Collect data from the table or any other relevant information
+                    var tableData = getTableData(); // Implement the function to fetch table data
+
+                    // Create a message to be shared on WhatsApp
+                    var message = "Check out the Purchase Order Details:\n" + tableData;
+
+                    // Create a link with the WhatsApp API format
+                    var whatsappLink = "https://wa.me/?text=" + encodeURIComponent(message);
+
+                    // Open the link in a new tab or window
+                    window.open(whatsappLink, "_blank");
+                }
+
             </script>
            
-              
+           <div class="modal fade" id="shareBillEmail">
+            <div class="modal-dialog modal-xl">
+              <div class="modal-content" style="background: #243e54;border-radius: 20px;">
+                <div class="modal-header" style="background: #243e54;">
+                  <h5 class="m-3 text-uppercase" id="shareBillEmailLabel">Share Statement Via Email</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                      aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body" style="background: #243e54;">
+                  <div class="card p-3 m-3">
+                    <form action="{% url 'LoanStatement_mail' loan.id %}" method="post" class="needs-validation"
+                      id="share_to_email_form" autocomplete="off">
+                      {% csrf_token %}
+                      <input name="FromD" class="inputdate form-control"  id="date1"  type="date"  >
+                      <input name="ToD" class="inputdate form-control"  id="date2" type="date" >
+                      <div class="form-group">
+                        
+                        <label for="emailIds">Email IDs</label>
+                        <textarea class="form-control text-light" name="email_ids" id="emailIds" rows="5"
+                          placeholder="Multiple emails can be added by separating with a comma(,)." required></textarea>
+                      </div>
+                      <div class="form-group mt-2">
+                        <label for="item_unitname">Message(optional)</label>
+                        <textarea name="email_message" id="email_message" class=" form-control text-light" cols=""
+                          rows="4" placeholder="This message will be sent along with Bill details."></textarea>
+                      </div>
+                    
+                  </div>
+                  <div class="modal-footer d-flex justify-content-center" style="border-top: 1px solid #ffff;">
+                    <input type="submit" id="generateAndSendPdf" class="submitShareEmailBtn rounded-pill text-grey w-50 my-4 mx-3" style="background-color: #0d2b46;padding: 7px 0;" value="SEND MAIL">
+                  </div>
+                </div></form>
+
+              </div>
+            </div>
+          </div>
             
         <div id="whatToPrint">
             <style>
@@ -400,10 +442,11 @@
                                             {{cmp1.email}}<br>
                                         </p>  
                                     </div>
-                                    <div class="col-5">
-                                        <p style="text-align: center; color: #000000;" >
-                                            To,<br>{{loan.account_name}} <br>
-                                            {{loan.recieced_bank}}<br>
+                                    <div class="col-6">
+                                        <h5>{{loan.account_name}}</h5>
+                                        <p class="address "  >
+                                         {{loan.account_number}} <br>{{loan.recieced_bank}}
+
                                     
                                             <br>
                                         </p>
@@ -566,12 +609,25 @@
     {% endif %}
 
 
-    <script>
-        function filterDataByDate() {
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('end_date').value;
-            
-        }
-    </script>
 
+
+<script>
+    function filterDataByDate() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+    }
+</script>
+
+<script>
+    function updateHiddenFields() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+
+    // Set the values of hidden input fields
+    document.getElementById('date1').value = startDate;
+    document.getElementById('date2').value = endDate;
+}
+
+</script>
     {% endblock %}

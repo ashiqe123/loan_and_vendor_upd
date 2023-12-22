@@ -38,9 +38,8 @@
                                 </button>
                                 <div class="dropdown-menu" style="background-color: black;">
                                     <a class="dropdown-item" href="{% url 'loan' %}">All</a>
-                                    <a class="dropdown-item" href="{% url 'activeloan' %}">Account Holder</a>
-                                    <a class="dropdown-item" href="{% url 'inactiveloan'  %}">Loan Balance</a>
-                                    <a class="dropdown-item" href="{% url 'inactiveloan'  %}">Loan Amount</a>
+                                    <a class="dropdown-item" id="sortAccount">Account Holder</a>
+                                    <a class="dropdown-item" id="sortLoan">Loan Amount</a>
 
                                 </div>
                         </div>
@@ -120,6 +119,80 @@
     </div>
 </div>
 <!-- Edit Modal -->
+
+
+<script>
+    $(document).ready(function () {
+        $("#sortAccount").on("click", function () {
+            sortTable(2);  // Sort by the "ACCOUNT" column, change the index if needed
+        });
+    });
+
+    function sortTable(colIndex) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("tabletobe");
+        switching = true;
+
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+
+                x = rows[i].getElementsByTagName("td")[colIndex];
+                y = rows[i + 1].getElementsByTagName("td")[colIndex];
+
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $("#sortLoan").on("click", function () {
+            sortTable(4);  // Sort by the "ACCOUNT" column, change the index if needed
+        });
+    });
+
+    function sortTable(colIndex) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("tabletobe");
+        switching = true;
+
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+
+                x = rows[i].getElementsByTagName("td")[colIndex];
+                y = rows[i + 1].getElementsByTagName("td")[colIndex];
+
+                if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+    }
+</script>
 
 
 <script>

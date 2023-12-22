@@ -48226,39 +48226,6 @@ def delet_loan(request, id):
     
     
     
-    
-def loan_statement(request,id):
-    loan=loan_account.objects.get(id=id)
-    cmp1 = company.objects.get(id=request.session["uid"])
-    if request.method == 'POST':
-        sdate=request.POST.get('sdate')
-        edate=request.POST.get('edate')
-        
-        searchrslt=loan_transaction.objects.raw('select * from app1_loan_transaction where loan_date between "'+sdate+'" and "'+edate+'" ')
-        context={
-        'cmp1':cmp1,
-        'bnk':searchrslt,
-        'ids':id,
-        'loan':loan,
-
-        }
-        return render(request,'app1/loan_statement.html',context)
-    
-    else:
-        bnk=loan_transaction.objects.filter(loan_id=id)
-        loan=loan_account.objects.get(id=id)
-        cmp1 = company.objects.get(id=request.session["uid"])
-
-        
-
-        context={
-            'cmp1':cmp1,
-            'bnk':bnk,
-            'ids':id,
-            'loan':loan,
-
-            }
-        return render(request,'app1/loan_statement.html',context)
         
         
 def loan_pdf(request,id):
@@ -48303,14 +48270,14 @@ def active_status(request,id):
     loan=loan_account.objects.get(id=id)
     loan.status = 'Active'
     loan.save()
-    return redirect('loan_statement',id)
+    return redirect('loan_list',id)
     
     
 def inactive_status(request,id):
     loan=loan_account.objects.get(id=id)
     loan.status = 'In-Active'
     loan.save()
-    return redirect('loan_statement',id)
+    return redirect('loan_list',id)
     
     
 def sales_report(request):
@@ -52158,6 +52125,30 @@ def edit_additional_LOan_transaction(request,id):
 
 
 
+def dd(request,id):
+    cid = company.objects.get(id=request.session["uid"])
+    cmp1 = company.objects.get(id=request.session["uid"])
+    loan=loan_account.objects.get(id=id)
+    loan_tr=loan_transaction.objects.filter(loan_id=id)
+    bnk_name = loan.account_name
+    bnk_acc = BankAccountHolder.objects.get(name=bnk_name)
+    bnk_det = BankAccount.objects.get(holder=bnk_acc)
+    print(bnk_name)
+    print(loan)
+    context={
+        'cmp1':cmp1,
+        'loan':loan,
+        
+        'cid':cid,
+        'loan_tr':loan_tr,
+        'bnk_acc':bnk_acc,
+        'bnk_det':bnk_det,
+
+        
+        }
+
+    return render(request,'app1/loan_account_statement_pdf.html',context)
+
         # loan_trans = employee_loan_tran.objects.filter(cid = cid,employee =pay_employee.employeeid)
 
         # for i in loan_trans:
@@ -52177,3 +52168,114 @@ def edit_additional_LOan_transaction(request,id):
         #         employee_id.save()
 
         #         print('done')
+
+
+def LoanStatement_mail(request,id):
+    if request.user:
+            try:
+                if request.method == 'POST':
+                    fromdate = request.POST['FromD']
+                    todate = request.POST['ToD']
+                    print(fromdate)
+                    print('super')
+                    emails_string = request.POST['email_ids']
+                    cid = company.objects.get(id=request.session["uid"])
+                    cmp1 = company.objects.get(id=request.session["uid"])
+                    loan=loan_account.objects.get(id=id)
+                    loan_tr=loan_transaction.objects.filter(loan_id=id)
+                    bnk_name = loan.account_name
+                    bnk_acc = BankAccountHolder.objects.get(name=bnk_name)
+                    bnk_det = BankAccount.objects.get(holder=bnk_acc)
+
+                    if fromdate == '' and todate == '' :
+                        data = loan_transaction.objects.filter(cid=request.user.id,loan=loan)
+                    else:
+                        data = loan_transaction.objects.filter(cid=request.user.id,start_date__gte=fromdate, start_date__lte=todate,loan=loan)
+
+                    # Split the string by commas and remove any leading or trailing whitespace
+                    emails_list = [email.strip() for email in emails_string.split(',')]
+                    email_message = request.POST['email_message']
+                    
+                    cmp = company.objects.get(id_id=request.user.id)
+                    
+
+                    context = {'cmp': cmp, 'data': data, 'email_message': email_message, 'cmp1':cmp1,
+                    'loan':loan,
+                    
+                    'cid':cid,
+                    'loan_tr':loan_tr,
+                    'bnk_acc':bnk_acc,
+                    'bnk_det':bnk_det,
+}
+                    print('context working')
+                    template_path = 'app1/loan_account_statement_pdf.html'
+                    print('tpath working')
+                    template = get_template(template_path)
+                    print('template working')
+                    html = template.render(context)
+                    print('html working')
+                    result = BytesIO()
+                    print('bytes working')
+                    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+                    print('pisa working')
+
+                    if pdf.err:
+                        raise Exception(f"PDF generation error: {pdf.err}")
+
+                    pdf = result.getvalue()
+                    print('')
+                    filename = f'Loan_statement-{cmp.cname}.pdf'
+                    subject = f"Loan_statement - {cmp.cname}"
+                    email = EmailMessage(subject, f"Hi, \n{email_message} -of -{cmp.cname}. ", from_email=settings.EMAIL_HOST_USER, to=emails_list)
+                    email.attach(filename, pdf, "application/pdf")
+                    email.send(fail_silently=False)
+
+                    messages.success(request, 'Loan statement has been shared via email successfully..!')
+                    return redirect('loan_statement',id)
+            except Exception as e:
+                messages.error(request, f'Error while sending report: {e}')
+                return redirect('loan_statement',id)
+
+
+    
+def loan_statement(request,id):
+    loan=loan_account.objects.get(id=id)
+    cmp1 = company.objects.get(id=request.session["uid"])
+    current_date = date.today().strftime('%Y-%m-%d')
+
+    if request.method == 'POST':
+        sdate=request.POST.get('sdate')
+        edate=request.POST.get('edate')
+        print
+        searchrslt = loan_transaction.objects.filter(
+            loan_id=loan,
+            loan_date__range=(sdate, edate)
+        )
+        print(searchrslt)
+        context={
+        'cmp1':cmp1,
+        'bnk':searchrslt,
+        'ids':id,
+        'loan':loan,
+        'current_date':current_date,
+
+        }
+        return render(request,'app1/loan_statement.html',context)
+    
+    else:
+        bnk=loan_transaction.objects.filter(loan_id=id)
+        loan=loan_account.objects.get(id=id)
+        cmp1 = company.objects.get(id=request.session["uid"])
+
+        
+
+        context={
+            'cmp1':cmp1,
+            'bnk':bnk,
+            'ids':id,
+            'loan':loan,
+            'current_date':current_date,
+
+
+            }
+        return render(request,'app1/loan_statement.html',context)
