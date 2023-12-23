@@ -680,7 +680,7 @@ footer p {
                                                         {% if a.bank_type == 'PROCESSING FEE' or a.bank_type == 'OPENING BAL' %}
                                                             <a class="dropdown-item" href="#" onclick="showAlert('{{ a.bank_type }}')">Edit</a>
                                                         {% elif a.bank_type == 'ADDITIONAL LOAN ISSUED' %}
-                                                        <a class="dropdown-item" href="{% url 'edit_additional_LOan_transaction' a.id %}">Edit</a>
+                                                        <a class="dropdown-item" href="{% url 'edit_additional_LOan' a.id %}">Edit</a>
 
                                                         {% else %}
                                                             <a class="dropdown-item" href="{% url 'edit_transaction' a.id %}">Edit</a>
@@ -1320,7 +1320,7 @@ footer p {
                         </section>
             
                         <section class="product-area mt-4">
-                            <table class="table table-responsive-md table-hover mt-4" id="tabletobe">
+                            <table class="table table-responsive-md table-hover mt-4" id="tabletobe1">
                                 <thead>
                                 <tr>
                                    <!-- Inside the <thead> section of your table -->
@@ -1366,6 +1366,8 @@ footer p {
                                             <td  style="text-align: center;color:black;">{{ a.bank_type }}</td>
                                             {% elif a.bank_type == 'EMI PAID' %}
                                             <td  style="text-align: center;color:black;">{{ a.bank_type }}</td>
+                                            {% elif a.bank_type == 'ADDITIONAL LOAN ISSUED' %}
+                                            <td >{{ a.bank_type }}</td>
                                             {% endif %}
                                             <!-- <td >{{ a.loan_desc }}</td> -->
                                             
@@ -1497,11 +1499,11 @@ $.ajax({
 <script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
 
 <script type="text/javascript">function ExportToExcel(type, fn, dl) {
-        var elt = document.getElementById('tbl_exporttable_to_xls');
+        var elt = document.getElementById('tabletobe1');
         var wb = XLSX.utils.table_to_book(elt, { sheet: "sheet1" });
         return dl ?
             XLSX.write(wb, { bookType: type, bookSST: true, type: 'base64' }) :
-            XLSX.writeFile(wb, fn || ('Transaction.' + (type || 'xlsx')));
+            XLSX.writeFile(wb, fn || ('Transaction_ {{loan.account_name}} .' + (type || 'xlsx')));
     }
     
 </script>

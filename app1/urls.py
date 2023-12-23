@@ -1375,6 +1375,11 @@ urlpatterns = [
     path('additional_loan_approve/<int:id>',views.additional_loan_approve,name='additional_loan_approve'),
     path('additional_loan_transaction/<int:id>',views.additional_loan_transaction,name='additional_loan_transaction'),
     path('LoanStatement_mail/<int:id>',views.LoanStatement_mail,name='LoanStatement_mail'),
+    path('edit_additional_LOan_transaction/<int:id>',views.edit_additional_LOan_transaction,name='edit_additional_LOan_transaction'),
+    path('edit_additional_LOan/<int:id>',views.edit_additional_LOan,name='edit_additional_LOan'),
     path('dd/<int:id>',views.dd,name='dd'),
+
+    path('vendor_check',views.vendor_check,name='vendor_check'),
+    path('vendor_check_name',views.vendor_check_name,name='vendor_check_name')
  
 ]

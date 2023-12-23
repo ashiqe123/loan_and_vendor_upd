@@ -33352,29 +33352,6 @@ def view_eway_inv(request):
 
 #Jisha
 
-@login_required(login_url='regcomp')
-def govendor(request):
-    if 'uid' in request.session:
-        if request.session.has_key('uid'):
-            uid = request.session['uid']
-        else:
-            return redirect('/')
-        
-        cmp1 = company.objects.get(id=request.session['uid'])
-        vndr = vendor.objects.filter(cid=cmp1).all()
-        
-        sort_by = request.GET.get('sort_by', 'all') 
-
-        if sort_by == 'name':
-            vndr = vndr.order_by('firstname', 'lastname')
-        elif sort_by == 'company':
-            vndr = vndr.order_by('companyname')
-        elif sort_by == ('gst'):
-            vndr = vndr.order_by('gsttype')
-
-        return render(request, 'app1/govendor.html', {'cmp1': cmp1, 'vndr': vndr, 'sort_by': sort_by})
-    
-    return redirect('govendor')
 
 def vendor_active(request):
     cmp1 = company.objects.get(id=request.session["uid"])
@@ -48227,57 +48204,6 @@ def delet_loan(request, id):
     
     
         
-        
-def loan_pdf(request,id):
-
-    cmp1 = company.objects.get(id=request.session["uid"])
-    
-    bnk=loan_transaction.objects.filter(loan_id=id)
-
-    loan=loan_account.objects.get(id=id)
-    
-    template_path = 'app1/loan_pdf.html'
-    context={
-        'cmp1':cmp1,
-        'bnk':bnk,
-        'ids':id,
-        'loan':loan,
-
-    }
-    fname=loan.account_name
-   
-    # Create a Django response object, and specify content_type as pdftemp_creditnote
-    response = HttpResponse(content_type='application/pdf')
-    #response['Content-Disposition'] = 'attachment; filename="certificate.pdf"'
-    response['Content-Disposition'] =f'attachment; filename= {fname}.pdf'
-    # find the template and render it.
-    template = get_template(template_path)
-    html = template.render(context)
-
-    # create a pdf
-    pisa_status = pisa.CreatePDF(
-       html, dest=response)
-    
-
-
-    # if error then show some funy view
-    if pisa_status.err:
-       return HttpResponse('We had some errors <pre>' + html + '</pre>')
-    return response
-    
-
-def active_status(request,id):
-    loan=loan_account.objects.get(id=id)
-    loan.status = 'Active'
-    loan.save()
-    return redirect('loan_list',id)
-    
-    
-def inactive_status(request,id):
-    loan=loan_account.objects.get(id=id)
-    loan.status = 'In-Active'
-    loan.save()
-    return redirect('loan_list',id)
     
     
 def sales_report(request):
@@ -51310,10 +51236,13 @@ def loan_trans(request,id):
     loan_id_global = id
     cid = company.objects.get(id=request.session["uid"])
     bank=bankings_G.objects.filter(cid=cid)
+    current_date = date.today().strftime('%Y-%m-%d')
+
     context={
         'cid':cid,
         'bank':bank, 
         'loan_id_global':loan_id_global, 
+        'current_date':current_date,
     }
     return render(request,'app1/loan_payment.html',context)
     
@@ -52019,6 +51948,34 @@ def additional_loan_transaction(request , id):
             received_bank.save()
     return redirect('loan_list',id)
 
+def edit_additional_LOan(request,id):
+    cid = company.objects.get(id=request.session["uid"])
+
+    bank=bankings_G.objects.filter(cid=cid)
+    cmp1 = company.objects.get(id=request.session["uid"])
+    employ = loan_transaction.objects.get(id=id)
+    employ_ln = employ.loan.id
+    print(employ_ln)
+    employ_ln= loan_account.objects.get(id=employ_ln)
+    remain = employ.balance - employ.loan_amount
+    print('remAian')
+    print(remain)
+    reset_amount = int(employ_ln.loan_amount) - employ.loan_amount
+    print(reset_amount)
+    la = int(employ_ln.loan_amount) - employ.loan_amount
+    employ_ln.loan_amount=la
+    employ_ln.balance = reset_amount
+    employ_ln.save()
+    print('done')
+
+    employ.save()
+    context={
+        'bank':bank,
+        'cmp1':cid,
+        'employ':employ,
+        'remain':remain,
+    }
+    return render(request,'app1/edit_additional_LOan_transaction.html',context)
 
 
 def edit_additional_LOan_transaction(request,id):
@@ -52114,14 +52071,8 @@ def edit_additional_LOan_transaction(request,id):
                 employ_ln.save()
 
                 print('done1')
-        return redirect('loan_list',employ_ln.id)
-    context={
-        'bank':bank,
-        'cmp1':cid,
-        'employ':employ,
-        'remain':remain,
-    }
-    return render(request,'app1/edit_additional_LOan_transaction.html',context)
+    return redirect('loan_list',employ_ln.id)
+
 
 
 
@@ -52188,10 +52139,14 @@ def LoanStatement_mail(request,id):
                     bnk_det = BankAccount.objects.get(holder=bnk_acc)
 
                     if fromdate == '' and todate == '' :
-                        data = loan_transaction.objects.filter(cid=request.user.id,loan=loan)
+                        data = loan_transaction.objects.filter(loan_id=id)
+                        for i in data:
+                            print(i)
+                            print('ddddd')
                     else:
-                        data = loan_transaction.objects.filter(cid=request.user.id,start_date__gte=fromdate, start_date__lte=todate,loan=loan)
-
+                        data = loan_transaction.objects.filter(loan_date__gte=fromdate, loan_date__lte=todate,loan_id=id)
+                    print(data)
+            
                     # Split the string by commas and remove any leading or trailing whitespace
                     emails_list = [email.strip() for email in emails_string.split(',')]
                     email_message = request.POST['email_message']
@@ -52255,6 +52210,8 @@ def loan_statement(request,id):
         context={
         'cmp1':cmp1,
         'bnk':searchrslt,
+        'sdate':sdate,
+        'edate':edate,
         'ids':id,
         'loan':loan,
         'current_date':current_date,
@@ -52266,6 +52223,7 @@ def loan_statement(request,id):
         bnk=loan_transaction.objects.filter(loan_id=id)
         loan=loan_account.objects.get(id=id)
         cmp1 = company.objects.get(id=request.session["uid"])
+        current_date = date.today().strftime('%Y-%m-%d')
 
         
 
@@ -52279,3 +52237,117 @@ def loan_statement(request,id):
 
             }
         return render(request,'app1/loan_statement.html',context)
+        
+def loan_pdf(request,id):
+
+    cmp1 = company.objects.get(id=request.session["uid"])
+    
+    bnk=loan_transaction.objects.filter(loan_id=id)
+
+    loan=loan_account.objects.get(id=id)
+    
+    template_path = 'app1/loan_account_statement_pdf.html'
+    context={
+        'cmp1':cmp1,
+        'data':bnk,
+        'ids':id,
+        'loan':loan,
+
+    }
+    fname=loan.account_name
+   
+    # Create a Django response object, and specify content_type as pdftemp_creditnote
+    response = HttpResponse(content_type='application/pdf')
+    #response['Content-Disposition'] = 'attachment; filename="certificate.pdf"'
+    response['Content-Disposition'] =f'attachment; filename= {fname}.pdf'
+    # find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisa_status = pisa.CreatePDF(
+       html, dest=response)
+    
+
+
+    # if error then show some funy view
+    if pisa_status.err:
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+    
+
+def active_status(request,id):
+    loan=loan_account.objects.get(id=id)
+    loan.status = 'Active'
+    loan.save()
+    return redirect('loan_list',id)
+    
+    
+def inactive_status(request,id):
+    loan=loan_account.objects.get(id=id)
+    loan.status = 'In-Active'
+    loan.save()
+    return redirect('loan_list',id)
+
+
+
+##%%%%%%%%%%%%%%%%%%%%5%%%%%%%%%%%%%%%%%%%%%%%
+
+
+@login_required(login_url='regcomp')
+def govendor(request):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        
+        cmp1 = company.objects.get(id=request.session['uid'])
+        vndr = vendor.objects.filter(cid=cmp1).all()
+        
+        sort_by = request.GET.get('sort_by', 'all') 
+
+        if sort_by == 'name':
+            vndr = vndr.order_by('firstname', 'lastname')
+        elif sort_by == 'company':
+            vndr = vndr.order_by('companyname')
+        elif sort_by == ('gst'):
+            vndr = vndr.order_by('gsttype')
+
+        return render(request, 'app1/govendor.html', {'cmp1': cmp1, 'vndr': vndr, 'sort_by': sort_by})
+    
+    return redirect('govendor')
+
+
+
+
+from django.http import JsonResponse
+
+def vendor_check(request):
+    pan_number = request.GET.get('panno', None)
+    cmp1 = company.objects.get(id=request.session['uid'])
+    print(pan_number)
+    data = {
+        'is_taken': vendor.objects.filter(cid=cmp1, panno=pan_number).exists()
+    }
+
+    if data['is_taken']:
+        data['error_message'] = 'Vendor with this PAN number already exists.'
+
+    return JsonResponse(data)
+
+
+def vendor_check_name(request):
+    fn = request.GET.get('fn', None)
+    ln = request.GET.get('ln', None)
+
+    cmp1 = company.objects.get(id=request.session['uid'])
+    print(fn)
+    data = {
+        'is_taken': vendor.objects.filter(cid=cmp1, firstname=fn,lastname=ln).exists()
+    }
+
+    if data['is_taken']:
+        data['error_message'] = 'Vendor with this name already exists.'
+
+    return JsonResponse(data)

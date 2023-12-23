@@ -43,9 +43,8 @@
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="sortByDropdown">
                                     <a class="dropdown-item" href="?sort_by=all">All</a>
-                                    <a class="dropdown-item" href="?sort_by=name">Name</a>
-                                    <a class="dropdown-item" href="?sort_by=company">Company Name</a>
-                                    <a class="dropdown-item" href="?sort_by=gst">GST Type</a>
+                                    <a class="dropdown-item" href="?sort_by=name">Vendor Name</a>
+                                    <a class="dropdown-item" href="?sort_by=balance">Balance</a>
                                     <!-- <div class="dropdown-menu" aria-labelledby="gstTypeDropdown">
                                         <a class="dropdown-item" href="?sort_by=gsttype-regular">Registered Business - Regular</a>
                                         <a class="dropdown-item" href="?sort_by=gsttype-composition">Registered Business - Composition</a>
@@ -77,30 +76,31 @@
                             <thead>
                             <tr>
                                 <th>NAME</th>
-                                <th>COMPANY NAME</th>
-                                <th>EMAIL ID</th>
                                 <th>MOBILE NO</th>
+                                <th>EMAIL ID</th>
                                 <th>GST TYPE</th>
                                 <th>GSTIN</th>
-                                <th>PAN NO</th>
+                                <th>OPENING BAL</th>
                                 <th>STATUS</th>
+                                <th>BALANCE</th>
+
                             </tr>
                             </thead>
                             <tbody>
                             {% for v in vndr %}
                             <tr class="row1" onclick="window.location='viewvendor/{{ v.vendorid }} ';">
                                 <td>{{ v.firstname }} {{ v.lastname }}</td>
-                                <td>{{ v.companyname }}</td>
                                 <td>{{ v.email }}</td>
                                 <td>{{ v.mobile }}</td>
                                 <td>{{ v.gsttype }}</td>
                                 <td>{{ v.gstin }}</td>
-                                <td>{{ v.panno }}</td>
+                                <td>{{ v.openingbalance }}</td>
                                 {% if v.is_active %}
                                 <td>Active</td>
                                 {% else %}
                                 <td>Inactive</td>
                                 {% endif %}
+                                <td>{{v.opblnc_due}}</td>
                             </tr>
                             {% endfor %}
                             </tbody>

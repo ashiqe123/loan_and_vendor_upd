@@ -103,6 +103,8 @@
                 <table class="table2 table-hover">
                     <thead>
                         <tr>
+                            <th>SL:NO</th>
+
                             <th>DATE</th>
                             <th>TYPE</th>
                             <th>AMOUNT</th>
@@ -116,48 +118,30 @@
                     </thead>
                     <tbody>
 
-                        {% for a in loan_tr %}
+                        {% for a in data  %}
                         {% if a.loan_amount != 0 %}
-                                 <tr>
-                                     {% if a.type == 'LOAN ADJ'   %}
-                                     <td>{{a.loan_date}}</td>
-                                     {% elif a.type == 'LOAN APPROVED' %}
-                                     <td>{{a.loan_date}}</td>
-
-                                     {% endif %}
-                                     {% if a.bank_type == 'OPENING BAL' %}
-                                    
-                                         <td>{{a.bank_type}}</td>
-                                     {% elif a.bank_type == 'PROCESSING FEE' %}
-                                     <td>{{a.bank_type}}</td>
-                                     {% elif a.bank_type == 'EMI PAID' %}
-                                     <td>{{a.bank_type}}</td>
-                                     {% endif %}
-                                     <!-- {% if a.type == 'LOAN APPROVED' %}
-                                     <td>{{a.type}}</td>
-                                     {% elif a.type == 'LOAN ADJ' %}
-                                     <td>{{a.type}}</td>
-                                     {% endif %} -->
-                                     <td>{{ a.loan_amount }}</td> <!-- Displaying loan amount from loan_transaction model -->
-                                     <td>{{a.loan_intrest|default:0}}</td>
-                                     <!-- {% if a.type == 'LOAN ADJ' %}
-                                     <td>{{a.loan_desc}}</td>
-                                     {% elif a.type == 'LOAN APPROVED' %}
-                                     <td>{{a.loan_desc}}</td>
-                                     {% else %}
-                                     <td>{{a.cash_description}}</td>
-                                     {% endif %} -->
-                                     {% if a.type == 'LOAN ADJ' %}
-                                         <td>{{a.loan_amount }}</td>
-                                         {% elif a.type == 'LOAN APPROVED' %}
-                                         <td>{{a.loan_amount }}</td>
-                                         {% else %}
-                                         {% if a.cash_adjust == 'ADD CASH' %}
-                                         <td>+ {{a.cash_cash}}</td>
-                                         {% elif a.cash_adjust == 'REDUCE CASH' %}
-                                         <td>- {{a.cash_cash}}</td>
-                                         {% endif %}
-                                         {% endif %}
+                                 <tr><td>{{forloop.counter}}</td>           
+                                    <td >{{ a.loan_date }}</td>
+                                    {% if a.bank_type == 'PROCESSING FEE' %}
+                                                <td >{{ a.bank_type }}</td>
+                                                {% elif a.bank_type == 'OPENING BAL' %}
+                                                <td >{{ a.bank_type }}</td>
+                                                {% elif a.bank_type == 'EMI PAID' %}
+                                                <td >{{ a.bank_type }}</td>
+                                                {% elif a.bank_type == 'ADDITIONAL LOAN ISSUED' %}
+                                                <td >{{ a.bank_type }}</td>
+    
+                                                {% endif %}
+                                                <!-- <td >{{ a.loan_desc }}</td> -->
+                                                
+                                                
+                                                
+                                                <td>{{a.loan_amount}}</td>
+                                                <td>{{a.loan_intrest|default:0}}</td>
+                
+                                                <td>{{a.total}}</td>                 <!-- <td>{{a.balance}}</td> -->
+ 
+                                     
                                          <!-- <td>{{a.balance}}</td> -->
 
                                  </tr>

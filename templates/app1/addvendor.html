@@ -28,7 +28,7 @@
                     {% if user.is_authenticated %}
                         <div class="row">
                             <div class="col-md-3 mt-2">
-                                <label for="validationCustom01">Title</label>
+                                <label for="validationCustom">Title</label>
                                 <select name="title" id="title" class="form-control">
                                     <option value="Mr">Mr</option>
                                     <option value="Mrs">Mrs</option>
@@ -38,12 +38,12 @@
                             </div>
                             <div class="col-md-3 mt-2">
                                 <label for="validationCustom02">First name</label>
-                                <input type="text" class="form-control" id="validationCustom02" name="firstname" required>
+                                <input type="text" class="form-control" id="validationCustom01" onchange="checkVendor_name()" name="firstname" required>
                                 
                             </div>
                             <div class="col-md-3 mt-2">
                                 <label for="validationCustom02">Last name</label>
-                                <input type="text" class="form-control" id="validationCustom02" name="lastname" required>
+                                <input type="text" class="form-control" id="validationCustom02" onchange="checkVendor_name()" name="lastname" required>
                             </div>
                             <div class="col-md-3 mt-2">
                                 <label for="validationCustom03">Company</label>
@@ -72,6 +72,8 @@
                         <hr>
                         <center><h4><b>Other Options</b></h4></center>
                         <hr>
+
+                        
                         <div class="row">
                             <div class="col-md-3 mt-3">
                                 <label for="validationCustom04">GST Treatment</label>
@@ -118,7 +120,7 @@
                              </div> -->
                             <div class="col-md-3 mt-3">
                                 <label for="validationCustom03">PAN NO</label>
-                                <input type="text" class="form-control" id="" name="panno"
+                                <input type="text" class="form-control" id="panno" oninput="checkVendor_pan()" name="panno"
                                 placeholder="APPCK7465F">
                             </div>
                             <div class="col-md-3 mt-3">
@@ -212,11 +214,9 @@
                                <div class="d-flex">
                                 <select class="custom-select" name="paymentterms" id="termadd" onclick="showinp('newtrm', this)" required>
                                     <option selected id="trmopt" hidden></option>
-                                    <option value="0">Due on Receipt</option>
-                                    <option value="15">NET 15</option>
+                                    <option id="new_crprd" value="0">Due on Receipt</option>
                                     <option value="30">NET 30</option>
                                     <option value="60">NET 60</option>
-                                    <option id="new_crprd"></option>
                                     {% for pd in cpd %}
                                         <option value="{{ pd.newperiod }}">NET {{ pd.newperiod }}</option>
                                     {% endfor %}
@@ -480,7 +480,57 @@
             </div>
         </div>
     </div>
-    
+    <script>
+        function checkVendor_pan() {
+            var panNumber = $("#panno").val();
+            console.log(panNumber)
+            $.ajax({
+                url: 'vendor_check',  // Update this with the correct URL
+                data: {
+                    'panno': panNumber
+                },
+                dataType: 'json',
+                success: function (data) {
+                    if (data.is_taken) {
+                        $("#panno-error").text(data.error_message);
+                        alert('Vendor with this PAN number already exists.'); // You can customize the alert message
+                    } else {
+                        $("#panno-error").text('');
+                    }
+                }
+            });
+        }
+    </script>
+ 
+ 
+<script>
+    function checkVendor_name() {
+        var firstName = document.getElementById('validationCustom01').value;
+        var lastName = document.getElementById('validationCustom02').value;
+        console.log(firstName)
+        console.log(lastName)
+        $.ajax({
+            url: 'vendor_check_name',  // Update this with the correct URL
+            data: {
+                'fn': firstName,
+                'ln': lastName,
+            },
+            dataType: 'json',
+            success: function (data) {
+                if (data.is_taken) {
+                    alert('Vendor with this name already exists.');
+                    // Handle other actions or UI updates if needed
+                } else {
+                    // Handle other actions or UI updates if needed
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                // Handle errors if needed
+            }
+        });
+    }
+</script>
     <script>
         $(document).ready(function () {
             $('#crdt_prd_form').submit(function (e) {
@@ -696,3 +746,4 @@
     </script>
 
 {% endblock %}
+
