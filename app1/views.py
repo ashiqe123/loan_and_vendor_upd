@@ -44714,7 +44714,7 @@ def get_transaction_data(request,id):
         datevalue = request.GET.get('datevalue')
         totalvalue = request.GET.get('totalvalue')
         balancevalue = request.GET.get('balancevalue')
-
+        typefilter = request.GET.get('typefilter')
         if datevalue:
             datevalue = dt.strptime(datevalue, '%Y-%m-%d').date()
 
@@ -44729,6 +44729,10 @@ def get_transaction_data(request,id):
 
         if balancevalue:
             combined_data = [item for item in combined_data if str(item['Balance']) == balancevalue]
+                             
+        if typefilter:
+            combined_data = [item for item in combined_data if str(item['Type']) == typefilter]
+
 
         
         return JsonResponse({'combined_data': combined_data})      

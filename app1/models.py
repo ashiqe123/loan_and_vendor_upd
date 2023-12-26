@@ -1398,7 +1398,7 @@ class vendor(models.Model):
     opening_balance_type = models.CharField(max_length=10,null=True,blank=True)
     attachment = models.ImageField(upload_to="vendor-files/", null=True)
     is_active =models.BooleanField(default=True)
-
+    balance = models.CharField(max_length=100,null=True)
 
 
 class purchaseorder(models.Model):

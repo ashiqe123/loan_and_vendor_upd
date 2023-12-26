@@ -758,73 +758,25 @@
     
                                     <tr>
                                         
-                                        <th class="type-column">
-                                            <div class="row">
-                                                
-                                                <div class="col-md-12">
-                                                    <div class="btn-group  dropup">
-                                                        <button type="button" class="btn  text-white" >Type</button>
-                                                        <button type="button" class="btn   text-white  dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                                            <span class="visually-hidden"></span>
-                                                        </button>
-                                                        <ul id="filterDropdown" class="dropdown-menu">
-                                                            
-                                                            <form method="post" action="">
-                                                                {% csrf_token %}
-    
-                                                                <div class="container">
-                                                                                                                                
-                                                                    
-                                                                    <div class="form-check mb-1">
-                                                                        <input class="form-check-input checkboxFilter" type="checkbox" value="Bill" id="checkboxbill">
-                                                                        <label class="form-check-label" for="flexCheckChecked">
-                                                                          Bill
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="form-check mb-1">
-                                                                        <input class="form-check-input checkboxFilter" type="checkbox" value="Purchase Order" id="checkboxorder">
-                                                                        <label class="form-check-label" for="flexCheckDefault">
-                                                                          Purchase Order
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="form-check mb-1">
-                                                                        <input class="form-check-input checkboxFilter" type="checkbox" value="Expense" id="checkboxexpense">
-                                                                        <label class="form-check-label" for="flexCheckChecked">
-                                                                          Expense
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="form-check mb-1">
-                                                                        <input class="form-check-input checkboxFilter" type="checkbox" value="Payment" id="checkboxpayment">
-                                                                        <label class="form-check-label" for="flexCheckDefault">
-                                                                          Payment
-                                                                        </label>
-                                                                    </div>
-                                                                    <div class="form-check mb-1">
-                                                                        <input class="form-check-input checkboxFilter" type="checkbox" value="Debit Note" id="checkboxdebit">
-                                                                        <label class="form-check-label" for="flexCheckChecked">
-                                                                          Debit Note
-                                                                        </label>
-                                                                    </div>
-                                                                    
-                                                                    
-                                                                    <div class="d-grid gap-2 d-md-block">
+                                        <th class="filterable-column">
+                                            <div class="btn-group dropup">
+                                                <button type="button" class="btn text-white">Type</button>
+                                                <button class="btn text-white dropdown-toggle" type="button" id="numberFilterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="numberFilterDropdown">
+                                                    <div class="input-group mt-2 mb-2">
+                                                        <input type="text" class="form-control" id="typefilter" placeholder="Enter type">
+                                                    </div>
+                                                    <div class="d-grid gap-2 d-md-block">
                                                                         
-                                                                        <input type="reset" id="resetbtn" class="btn btn-outline-info btn-sm  text-grey w-30 mt-3 mb-3" value="Clear" >
-                                                                    </div>
+                                                        <input type="submit" id="submitbtn" class=" filter-button btn btn-outline-info btn-sm  text-grey w-30 mt-1 mb-1" value="submit" style="margin-left: 5px;">
+                                                        <input type="reset" id="clearbtn" class="clearbtn btn btn-outline-info btn-sm  text-grey w-30 mt-3 mb-3" value="Clear" >
     
-                                                                </div>
-                                                                
-    
-                                                            </form>
-                                                            
-                                                        </ul>
-                                                        </div>
+                                                    </div>
                                                 </div>
-                                                
-                                                
                                             </div>
-                                            
                                         </th>
+    
                                         <th class="filterable-column">
                                             <div class="btn-group dropup">
                                                 <button type="button" class="btn text-white">Number</button>
@@ -933,6 +885,8 @@
     </div>
 
 
+
+    
     <!-- attach file modal -->
     <div class="modal fade" id="attachModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -1229,6 +1183,7 @@
             var datevalue = $('#datefilter').val();
             var totalvalue = $('#totalfilter').val();
             var balancevalue = $('#balancefilter').val();
+            var typefilter = $('#typefilter').val();
 
             // Make an AJAX request to filter based on the input box value
             $.ajax({
@@ -1239,7 +1194,8 @@
                     numbervalue: numbervalue,
                     datevalue: datevalue,
                     totalvalue: totalvalue,
-                    balancevalue: balancevalue
+                    balancevalue: balancevalue,
+                    typefilter:typefilter
                 },
                 dataType: 'json',
                 success: function(data) {
@@ -1257,6 +1213,8 @@
                 $('#datefilter').val('');
                 $('#totalfilter').val('');
                 $('#balancefilter').val('');
+                $('#typefilter').val('');
+
                 $.ajax({
                     url: '{% url "get_transaction_data" vndr.vendorid %}', // Replace with the actual URL to fetch the original data
                     type: 'GET',

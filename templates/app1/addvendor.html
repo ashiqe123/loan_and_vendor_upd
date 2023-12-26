@@ -494,6 +494,7 @@
                     if (data.is_taken) {
                         $("#panno-error").text(data.error_message);
                         alert('Vendor with this PAN number already exists.'); // You can customize the alert message
+                        document.getElementById('panno').value=''
                     } else {
                         $("#panno-error").text('');
                     }
@@ -519,6 +520,8 @@
             success: function (data) {
                 if (data.is_taken) {
                     alert('Vendor with this name already exists.');
+                    document.getElementById('validationCustom01').value = ''
+                    document.getElementById('validationCustom02').value= ''
                     // Handle other actions or UI updates if needed
                 } else {
                     // Handle other actions or UI updates if needed
