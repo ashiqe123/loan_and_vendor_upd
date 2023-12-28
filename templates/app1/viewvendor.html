@@ -145,7 +145,7 @@
                     <div class="collapse navbar-collapse tab" id="navbarSupportedContent">
                         <ul class="navbar-nav mr-auto">
                             <li class="nav-item">
-                                <a class="nav-link btn " role="button" onclick="Details()" style="color: white;"><i class="fa fa-info-circle" style="font-size: large;">&nbsp;Details</i><span class="sr-only">(current)</span></a>
+                                <a class="nav-link btn " role="button" onclick="Details()" style="color: white;"><i class="fa fa-info-circle" style="font-size: large;">&nbsp;Overview</i><span class="sr-only">(current)</span></a>
                             </li>
                             
                             <li class="nav-item">
@@ -161,7 +161,19 @@
                                 <a class="nav-link btn btn-outline-info btn-sm" role="button" style="color: white;" data-toggle="modal" data-target="#commentModal">
                                     <i class="fa fa-comment" style="font-size: medium;">&nbsp;Comment</i>
                                 </a>
-                            </li>                            
+                            </li>          
+                            <li class="nav-item">
+                                <div class="dropdown" style="padding: 10px; cursor: pointer; margin-top: -10px;">
+                                    <button class="btn btn-outline-info btn-sm dropdown-toggle pt-2 pb-2 p-2 text-white" type="button" id="shareDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-share" style="font-size: medium;padding: 10px;">&nbsp;Share</i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="shareDropdown" style="background-color: black;">
+                                        <a class="dropdown-item" style="color: white; cursor: pointer;" onclick="shareViaWhatsApp()">WhatsApp</a>
+                                        <a class="dropdown-item" style="color: white; cursor: pointer;" data-target="#shareBillEmail" data-toggle="modal">Email</a>
+                                    </div>
+                                </div>
+                                
+                            </li>                       
                             <li class="nav-item">
                                 <a class="nav-link btn btn-outline-info btn-sm mx-1"  role="button" onclick="generatePDF()"  style="color: white;">
                                     <i class="fa fa-file" style="font-size: medium;" >&nbsp;Pdf</i>
@@ -600,7 +612,7 @@
                                                                                     <tr>
                                                                                         <th>Balance Due</th>
                                                                                         <th>:</th>
-                                                                                        <th>{{tot6.t2}}</th>
+                                                                                        <th>{{total_balance_sum}}</th>
                                                                                     </tr>
                                                                                 </table>
                                                                             </div>
@@ -611,6 +623,7 @@
                                                                         <table id="logic" class="table table-bordered table-hover table-dark" width="100%" style="font-size:10px;color:black;">
                                                                             <thead class="thead-dark">
                                                                                 <tr>
+                                                                                    <th>SL.NO</th>
                                                                                 <th>Date</th>
                                                                                 <th>Transactions</th>
                                                                                 <th>Number</th>
@@ -621,6 +634,7 @@
                                                                             </thead>
                                                                             <tbody class="thead-dark">
                                                                                 <tr>
+                                                                                    <th>0</th>
                                                                                     <th>{{ tod }}</th>
                                                                                     <th>**Opening Balance**</th>
                                                                                     <td></td>
@@ -628,47 +642,22 @@
                                                                                     <td>{{received}}</td>
                                                                                     <th>{{ tot6.t2 }}{{ tot8.t2 }}</th>
                                                                                 </tr>
-                                                                                {% for i in statment %}
+                                                                                {% for data in combined_data %}
                                                                                     <tr>
-                                                                                        <th>{{i.date | date:'d-m-Y'}}</th>
-                                                                                        <th>
-                                                                                            {% if i.transactions == "Payable"  %}
-                                                                                                Payment Payable
-                                                                                            {% elif i.transactions == "Billed"  %}
-                                                                                                Bill
-                                                                                            {% else %}
-                                                                                                {{i.transactions}}
-                                                                                            {% endif %}</th>
-                                                                                        <th>{% if i.pbill != null  %}
-                                                                                            {{i.pbill.bill_no}}
-                                                                                            {% endif %} 
-                                                                                            {% if i.pymnt != null  %}
-                                                                                            ₹{{i.payments}} 
-                                                                                            {% endif %} 
-                                                                                        </th>
-                                                                                        <th>
-                                                                                            {% if i.amount %}
-                                                                                            {{i.amount}}
-                                                                                            {% else %}
-                                                                                            0
-                                                                                            {% endif %}
-                                                                                        </th>
-                                                                                        <th>{% if i.payments %}
-                                                                                            {{i.payments}}
-                                                                                            {% endif %}
-                                                                                            </th>
-                                                                                        <th>{% if i.balance %}
-                                                                                            {{i.balance}}
-                                                                                            {% else %}
-                                                                                            0
-                                                                                            {% endif %} 
-                                                                                        </th>
+                                                                                        <td>{{forloop.counter}}</td>
+                                                                                        <td>{{data.Date|date:'d-m-Y'}}</td>
+
+                                                                                        <th style="font-family: monospace;"><strong>{{data.Type}}</strong></th>
+                                                                                        <td>{{data.Number}}</td>
+                                                                                        <td>{{data.Total}}</td>
+                                                                                        <td>{{data.paid}}</td>
+                                                                                        <td>{{data.Balance}}</td>
+                                                    
                                                                                     </tr>
-                                                                                {% endfor %}
-                                                                                <br>
+                                                                                    {% endfor %}<br>
                                                                                 <tr>
                                                                                     <th colspan="5">Balance Due</th>
-                                                                                    <th >{{tot6.t2}}</th>
+                                                                                    <th >{{total_balance_sum}}</th>
                                                                                 </tr>
                                                                             </tbody>
                                                                             <tbody></tbody>
@@ -707,7 +696,7 @@
                                 </div>
                                 <div class="col-md-4"></div>
                                 <div class="col-md-4">
-                                    <p style="font-family: monospace;font-size: large;">Address : <strong>{{vndr.city}}</strong></p>
+                                    <p style="font-family: monospace;font-size: large;"><b>Balance</b> : <strong>{{vndr.city}}</strong></p>
                                 </div>
                             </div>
                             <div class="row mt-3 mb-3">
@@ -716,7 +705,11 @@
                                 </div>
                                 <div class="col-md-4"></div>
                                 <div class="col-md-4">
+                                    {% if vndr.gstin %}
                                     <p style="font-family: monospace;font-size: large;">GSTIN : <strong>{{vndr.gstin}}</strong></p>
+                                        {% else %}
+                                        <p></p>
+                                        {% endif %}
                                 </div>
                             </div>
                             <div class="row mt-3 mb-3">
@@ -757,6 +750,12 @@
                                 <thead>
     
                                     <tr>
+                                        
+                                        <th class="filterable-column">
+                                                <button type="button" class="btn text-white">SL.NO</button>
+                                             
+                                            
+                                        </th>
                                         
                                         <th class="filterable-column">
                                             <div class="btn-group dropup">
@@ -858,6 +857,7 @@
                                 <tbody>
                                     {% for data in combined_data %}
                                     <tr>
+                                        <td>{{forloop.counter}}</td>
                                         <th style="font-family: monospace;"><strong>{{data.Type}}</strong></th>
                                         <td>{{data.Number}}</td>
                                         <td>{{data.Date|date:'d-m-Y'}}</td>
@@ -1240,6 +1240,72 @@
 
 
     
+<div class="modal fade" id="shareBillEmail">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content" style="background: #243e54;border-radius: 20px;">
+        <div class="modal-header" style="background: #243e54;">
+          <h5 class="m-3 text-uppercase" id="shareBillEmailLabel">Share Statement Via Email</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body" style="background: #243e54;">
+          <div class="card p-3 m-3">
+            <form action="" method="post" class="needs-validation"
+              id="share_to_email_form" autocomplete="off">
+              {% csrf_token %}
+              <input name="FromD" class="inputdate form-control"  id="date1"  type="date" hidden  >
+              <input name="ToD" class="inputdate form-control"  id="date2" type="date" hidden>
+              <div class="form-group">
+                
+                <label for="emailIds">Email IDs</label>
+                <textarea class="form-control text-light" name="email_ids" id="emailIds" rows="5"
+                  placeholder="Multiple emails can be added by separating with a comma(,)." required></textarea>
+              </div>
+              <div class="form-group mt-2">
+                <label for="item_unitname">Message(optional)</label>
+                <textarea name="email_message" id="email_message" class=" form-control text-light" cols=""
+                  rows="4" placeholder="This message will be sent along with Bill details."></textarea>
+              </div>
+            
+          </div>
+          <div class="modal-footer d-flex justify-content-center" style="border-top: 1px solid #ffff;">
+            <input type="submit" id="generateAndSendPdf" class="submitShareEmailBtn rounded-pill text-grey w-50 my-4 mx-3" style="background-color: #0d2b46;padding: 7px 0;" value="SEND MAIL">
+          </div>
+        </div></form>
+
+      </div>
+    </div>
+  </div>
+  <form method='POST' id="dateForm">
+    {% csrf_token %}
+    <input type="date" class="mt-3" id="start_date" name='sdate' value="{{sdate}}" onchange="updateHiddenFields()">
+    <span class="ml-2 mr-2 mt-3"> TO </span>
+    <input type="date" class="mt-3" id="end_date" name='edate' value="{{edate}}" onchange="updateHiddenFields()">
+
+    <input type="submit" value='View'>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get the values from start_date and end_date inputs
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        // Set the values for date1 and date2 inputs in the modal
+        document.getElementById('date1').value = startDate;
+        document.getElementById('date2').value = endDate;
+    });
+
+    function updateHiddenFields() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+
+        // Set the values of hidden input fields
+        document.getElementById('date1').value = startDate;
+        document.getElementById('date2').value = endDate;
+    }
+</script>
+
     
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"

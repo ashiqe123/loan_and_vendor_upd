@@ -1433,7 +1433,7 @@ class purchaseorder(models.Model):
     round_off = models.CharField(max_length=100,null=True)
     tax_amount = models.CharField(max_length=100,null=True)
     balance_due = models.CharField(max_length=100,null=True)
-    grand_total = models.CharField(max_length=100,null=True)
+    grand_total = models.FloatField(max_length=100,null=True)
     note = models.CharField(max_length=255,null=True)
     file = models.FileField(upload_to='purchase/purchaseorder',default="default.png")
     total_discount = models.CharField(max_length=100,null=True)
@@ -1563,8 +1563,8 @@ class purchasepayment(models.Model):
     paymentdate = models.DateField(null=True)
     paymentmethod = models.CharField(max_length=100,null=True)
     depositeto = models.CharField(max_length=100)
-    amtreceived = models.CharField(max_length=100,null=True)
-    paymentamount = models.CharField(max_length=100,null=True)
+    amtreceived = models.FloatField(max_length=100,null=True)
+    paymentamount = models.FloatField(max_length=100,null=True)
     amtcredit = models.CharField(max_length=100, default='0')
     bank_names = models.CharField(max_length=100,null=True)
     paid_through = models.CharField(max_length=100,null=True)
@@ -1582,10 +1582,10 @@ class purchasepayment1(models.Model):
     cid = models.ForeignKey(company, on_delete=models.CASCADE,null=True)
     billdate = models.DateField(null=True)
     billno = models.CharField(max_length=100,null=True)
-    billamount = models.CharField(max_length=100,null=True)
+    billamount = models.FloatField(max_length=100,null=True)
     duedate = models.CharField(max_length=100,null=True)
-    amountdue = models.CharField(max_length=100,null=True)
-    payments = models.CharField(max_length=100,null=True) # Payment field
+    amountdue = models.FloatField(max_length=100,null=True)
+    payments = models.FloatField(max_length=100,null=True) # Payment field
     payment_id = models.IntegerField(null=True)
     payment_type = models.CharField(max_length=100,null=True)
     

@@ -33426,158 +33426,6 @@ def createvendor(request):
         return render(request,'app1/addvendor.html',{'cmp1': cmp1})
     return redirect('/')
 
-@login_required(login_url='regcomp')
-def viewvendor(request, id):
-    if 'uid' in request.session:
-        if request.session.has_key('uid'):
-            uid = request.session['uid']
-        else:
-            return redirect('/')
-        cmp1 = company.objects.get(id=request.session['uid'])
-        vndr=vendor.objects.get(vendorid=id) 
-        fn =vndr.firstname
-        ln = vndr.lastname
-        su = fn+ ' ' +ln
-        toda = date.today()
-        tod = toda.strftime("%Y-%m-%d")
-
-
-        pbill = purchasebill.objects.filter(vendor_name=su,status='Approved',date=tod)
-        pymnt = purchasepayment.objects.filter(vendor=su, paymentdate=tod)
-
-
-        statment, frd1, tod1 = get_vendor_statement(request, su, cmp1)   
-        
-
-        tot6 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
-        tot2 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('grand_total'))
-        tot3 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
-        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('paymentamount'))
-        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('amtcredit')) 
-
-       
-        value1 = tot3.get('t2', 0)
-        value2 = tot1.get('t2', 0) 
-        if value1 is None:
-            value1 = 0
-        if value2 is None:
-            value2 = 0 
-        received=value1+value2
-        
-        billed=0
-        sum=0
-        summ=0
-        re=0
-
-        for i in pbill:
-            if i.balance_amount:
-                sum+=i.balance_amount
-            if i.grand_total:
-                billed += i.grand_total  
-
-        pbl = purchasebill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
-        paymnt = purchasepayment.objects.filter(vendor=su,cid_id=cmp1).all()  
-        pdeb = purchasedebit.objects.filter(vendor=su,cid_id=cmp1).all()  
-        expnc = purchase_expense.objects.filter(vendor=su,cid_id=cmp1).all()   
-        pordr =purchaseorder.objects.filter(vendor_name=su,status='Draft',cid_id=cmp1).all() 
-
-        combined_data=[]
-
-        for item in pbl:
-            Type='Bill'
-            Number=int(item.bill_no)
-            Date=item.date
-            Total=int(item.grand_total)
-            Balance=int(item.balance_amount) if item.balance_amount is not None else 0
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance
-
-            })
-
-        for item in pordr:
-            Type='Purchase Order'
-            Number=int(item.puchaseorder_no)
-            Date=item.date
-            Total=int(item.grand_total)
-            Balance=int(item.balance_amount)
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance
-
-            })    
-
-        for item in paymnt:
-            Type='Payment'
-            Number=int(item.pymntid)
-            Date=item.paymentdate
-            Total = int(item.paymentamount) if item.paymentamount else 0
-            paid = int(item.amtreceived) if item.amtreceived else 0
-
-            
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':'None'
-
-            }) 
-
-        for item in pdeb:
-            Type='Debit Note'
-            Number=int(item.debit_no)
-            Date=item.debitdate
-            Total=int(item.grandtotal)
-            Balance='None'
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance
-
-            })    
-
-          
-        for item in expnc:
-            Type='Expense'
-            Number=int(item.expense_no)
-            Date=item.date 
-            Total=int(item.amount)
-            Balance='None'
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance
-
-            })                 
-
-        comments = VendorComment.objects.filter(vendor=vndr)
-        print(comments)
-
-        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'sum':sum,'sum2':summ,'billed':billed,'tod':tod,'re':re,
-                    'pymnt':pymnt,'pbl':pbl,'paymnt':paymnt,'pordr':pordr,'expnc':expnc,'pdeb':pdeb,
-                    'statment':statment,'tot6':tot6,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
-                    'frd1':frd1,'tod1':tod1,'received':received,'comments': comments
-
-                }
-        return render(request,'app1/viewvendor.html',context)
-    return redirect('viewvendor') 
-
 # @login_required(login_url='regcomp')
 # def viewvendor1(request,id):
 #     if 'uid' in request.session:
@@ -35892,7 +35740,7 @@ def createexpense(request):
         if request.method == 'POST':
             expense_no= '1000'
             date = request.POST['date']
-            expenseaccount = request.POST['expenseaccount']
+            expenseaccount = request.POST.get('expenseaccount')
             etyp = request.POST['expensetype']
             hsnsac = request.POST['hsn_sac']
             amount = request.POST['amount']
@@ -52355,3 +52203,287 @@ def vendor_check_name(request):
         data['error_message'] = 'Vendor with this name already exists.'
 
     return JsonResponse(data)
+
+
+
+def createexpense(request):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        cmp1 = company.objects.get(id=request.session['uid'])
+        if request.method == 'POST':
+            expense_no= '1000'
+            date = request.POST['date']
+            expenseaccount = request.POST.get('expenseaccount')
+            etyp = request.POST['expensetype']
+            hsnsac = request.POST['hsn_sac']
+            amount = request.POST['amount']
+            paidthrough = request.POST['paidthrough']
+            vendor = request.POST['vendor']
+            # gsttype = request.POST['gsttype']
+            supply=request.POST['sourceofsupply']
+            # destsupply=request.POST['destinofsupply']
+            customer=request.POST['customer']
+            tax=request.POST['tax']
+            reference=request.POST['reference']
+            note=request.POST['note']
+
+            exp = purchase_expense(date=date,expenseaccount=expenseaccount,expensetype=etyp,hsn_sac=hsnsac,amount=amount,
+                            paidthrough=paidthrough,vendor=vendor, sourceofsupply=supply, 
+                            customer=customer,tax=tax,reference=reference,note=note,cid=cmp1)
+
+            if len(request.FILES) != 0:
+                exp.file=request.FILES['file'] 
+
+            exp.save()
+            exp.expense_no = int(exp.expense_no) + exp.expenseid
+            exp.save()
+
+            paidthrough = request.POST['paidthrough']
+            amount = float(request.POST['amount'])
+            if accounts1.objects.get(name=paidthrough,cid=cmp1):
+                print(paidthrough)
+                acc = accounts1.objects.get(name=paidthrough,cid=cmp1)
+                acc.balance = float(acc.balance + amount)
+                acc.save()
+            else:
+                pass
+
+            expenseaccount = request.POST['expenseaccount']
+            amount = float(request.POST['amount'])
+            try:
+                acc = accounts1.objects.get(name=expenseaccount,cid=cmp1)
+                acc.balance = float(acc.balance + amount)
+                acc.save()
+            except:
+                pass
+            
+
+            pl3=profit_loss()
+            pl3.details = exp.vendor
+            pl3.cid = cmp1
+            pl3.acctype = "Expense"
+            pl3.transactions = "Expense"
+            pl3.accname = exp.expenseaccount
+            pl3.expnc = exp
+            pl3.details0 = exp.paidthrough
+            pl3.details1 = exp.expense_no
+            pl3.details2 = reference
+            pl3.date = exp.date
+            pl3.payments = exp.amount
+            pl3.save()
+
+            bs3=balance_sheet()
+            bs3.details = exp.vendor
+            bs3.cid = cmp1
+            bs3.acctype = "Current Asset"
+            bs3.transactions = "Expense"
+            bs3.account = exp.paidthrough
+            bs3.accname = exp.expenseaccount
+            bs3.expnc = exp
+            bs3.details1 = exp.expense_no
+            bs3.details2 = reference
+            bs3.date = exp.date
+            bs3.payments = exp.amount
+            bs3.save()
+
+            return redirect('goexpenses')
+        return render(request,'app1/goexpenses.html',{'cmp1': cmp1})
+    return redirect('/') 
+
+
+
+@login_required(login_url='regcomp')
+def viewvendor(request, id):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        cmp1 = company.objects.get(id=request.session['uid'])
+        vndr=vendor.objects.get(vendorid=id) 
+        fn =vndr.firstname
+        ln = vndr.lastname
+        su = fn+ ' ' +ln
+        toda = date.today()
+        tod = toda.strftime("%Y-%m-%d")
+
+
+        pbill = purchasebill.objects.filter(vendor_name=su,status='Approved',date=tod)
+        pymnt = purchasepayment.objects.filter(vendor=su, paymentdate=tod)
+
+
+        statment, frd1, tod1 = get_vendor_statement(request, su, cmp1)   
+        
+
+        tot6 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
+        tot2 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('grand_total'))
+        tot3 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('paymentamount'))
+        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('amtcredit')) 
+        tot1 = purchaseorder.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot4 = purchaseorder.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
+        sum_purchase_order_balance = purchaseorder.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance_amount'))['total_balance']
+
+        # Calculate the sum of balances for purchase bills
+        sum_purchase_bill_balance = purchasebill.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance_amount'))['total_balance']
+
+        # Calculate the sum of balances for recurring bills
+        sum_recurring_bill_balance = recurring_bill.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance'))['total_balance']
+
+        # Combine the sums for all types
+        total_balance_sum = sum_purchase_order_balance + sum_purchase_bill_balance + sum_recurring_bill_balance
+
+       
+        value1 = tot3.get('t2', 0)
+        value2 = tot1.get('t2', 0) 
+        if value1 is None:
+            value1 = 0
+        if value2 is None:
+            value2 = 0 
+        received=value1+value2
+        
+        billed=0
+        sum=0
+        summ=0
+        re=0
+
+        for i in pbill:
+            if i.balance_amount:
+                sum+=i.balance_amount
+            if i.grand_total:
+                billed += i.grand_total  
+
+        pbl = purchasebill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+        paymnt = purchasepayment.objects.filter(vendor=su,cid_id=cmp1).all()  
+        pdeb = purchasedebit.objects.filter(vendor=su,cid_id=cmp1).all()  
+        expnc = purchase_expense.objects.filter(vendor=su,cid_id=cmp1).all()   
+        pordr =purchaseorder.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+        rec =recurring_bill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+
+        combined_data=[]
+
+        for item in pbl:
+            Type='Bill'
+            Number=int(item.bill_no)
+            Date=item.date
+            Total=int(item.grand_total)
+            Balance=int(item.balance_amount) if item.balance_amount is not None else 0
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+
+            })
+
+        for item in rec:
+            Type='Recurring Bill'
+            Number=item.billno
+            Date=item.start_date
+            Total=int(item.grand_total)
+            Balance=int(item.balance)
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+            })    
+
+
+
+        for item in pordr:
+            Type='Purchase Order'
+            Number=int(item.puchaseorder_no)
+            Date=item.date
+            Total=int(item.grand_total)
+            Balance=int(item.balance_amount)
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+            })    
+
+        for item in paymnt:
+            Type='Payment'
+            Number=int(item.pymntid)
+            Date=item.paymentdate
+            Total = int(item.paymentamount) if item.paymentamount else 0
+            paid = int(item.amtreceived) if item.amtreceived else 0
+            bal = int(item.paymentamount) - int(item.amtreceived) if item.amtreceived else 0
+            
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':bal,
+                'paid':paid,
+
+            }) 
+
+        for item in pdeb:
+            Type='Debit Note'
+            Number=int(item.debit_no)
+            Date=item.debitdate
+            Total=int(item.grandtotal)
+            Balance=0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':0
+
+            })    
+
+          
+        for item in expnc:
+            Type='Expense'
+            Number=int(item.expense_no)
+            Date=item.date 
+            Total=int(item.amount)
+            Balance=Total
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'paid':0,
+                'Balance':0
+
+            })                 
+
+        comments = VendorComment.objects.filter(vendor=vndr)
+        print(comments)
+
+        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'sum':sum,'sum2':summ,'billed':billed,'tod':tod,'re':re,
+                    'pymnt':pymnt,'pbl':pbl,'paymnt':paymnt,'pordr':pordr,'expnc':expnc,'pdeb':pdeb,
+                    'statment':statment,'tot6':tot6,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
+                    'frd1':frd1,'tod1':tod1,'received':received,'comments': comments,'total_balance_sum':total_balance_sum,
+
+                }
+        return render(request,'app1/viewvendor.html',context)
+    return redirect('viewvendor') 
