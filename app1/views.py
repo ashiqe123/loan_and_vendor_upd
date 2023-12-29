@@ -37156,10 +37156,10 @@ def editpurchasedebit(request,id):
             pdebt.vendor = request.POST['vendor']
             pdebt.address = request.POST['address']
             pdebt.debit_no= request.POST['debit_no']
-            pdebt.supply=request.POST['supply']
-            pdebt.debitdate=request.POST['debitdate']
+            pdebt.supply=request.POST.get('supply')
+            pdebt.debitdate=request.POST.get('debitdate')
             pdebt.email=request.POST['email']
-            pdebt.billno=request.POST['billno']
+            pdebt.billno=request.POST.get('billno')
             pdebt.subtotal=request.POST['sub_total']
             pdebt.cgst=request.POST['cgst']
             pdebt.sgst=request.POST['sgst']
@@ -37213,7 +37213,7 @@ def editpurchasedebit(request,id):
             bs3.payments = pdebt.grandtotal
             bs3.save()
 
-            supply=request.POST['supply']
+            supply=request.POST.get('supply')
             if supply == cmp1.state:
                 bs4=balance_sheet.objects.get(cid=cmp1,debit=pdebt,account='Input CGST')
                 bs4.details = pdebt.vendor
@@ -52317,44 +52317,19 @@ def viewvendor(request, id):
 
         statment, frd1, tod1 = get_vendor_statement(request, su, cmp1)   
         
+        tot6 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
+        tot3 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('amtcredit'))
+        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('paymentamount')) 
+        tot2 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot4 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance'))
+        tot5 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('paid_amount'))
+        tot8 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('balance_amount'))
 
-        tot6 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
-        tot2 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('grand_total'))
-        tot3 = purchasebill.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
-        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('paymentamount'))
-        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('amtcredit')) 
-        tot1 = purchaseorder.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
-        tot4 = purchaseorder.objects.filter(cid=cmp1,vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
-        sum_purchase_order_balance = purchaseorder.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance_amount'))['total_balance']
+        # Corrected total balance calculation
+        total_balance = (float(tot6['t2'] or 0) +float(tot1['t2'] or 0) +float(tot4['t2'] or 0) +float(tot8['t2'] or 0))
 
-        # Calculate the sum of balances for purchase bills
-        sum_purchase_bill_balance = purchasebill.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance_amount'))['total_balance']
 
-        # Calculate the sum of balances for recurring bills
-        sum_recurring_bill_balance = recurring_bill.objects.filter(vendor_name=su, cid_id=cmp1).aggregate(total_balance=Sum('balance'))['total_balance']
-
-        # Combine the sums for all types
-        total_balance_sum = sum_purchase_order_balance + sum_purchase_bill_balance + sum_recurring_bill_balance
-
-       
-        value1 = tot3.get('t2', 0)
-        value2 = tot1.get('t2', 0) 
-        if value1 is None:
-            value1 = 0
-        if value2 is None:
-            value2 = 0 
-        received=value1+value2
-        
-        billed=0
-        sum=0
-        summ=0
-        re=0
-
-        for i in pbill:
-            if i.balance_amount:
-                sum+=i.balance_amount
-            if i.grand_total:
-                billed += i.grand_total  
 
         pbl = purchasebill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
         paymnt = purchasepayment.objects.filter(vendor=su,cid_id=cmp1).all()  
@@ -52446,7 +52421,7 @@ def viewvendor(request, id):
             Number=int(item.debit_no)
             Date=item.debitdate
             Total=int(item.grandtotal)
-            Balance=0
+            Balance=float(item.balance_amount)
 
             combined_data.append({
                 'Type':Type,
@@ -52479,10 +52454,10 @@ def viewvendor(request, id):
         comments = VendorComment.objects.filter(vendor=vndr)
         print(comments)
 
-        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'sum':sum,'sum2':summ,'billed':billed,'tod':tod,'re':re,
+        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'tod':tod,'re':re,
                     'pymnt':pymnt,'pbl':pbl,'paymnt':paymnt,'pordr':pordr,'expnc':expnc,'pdeb':pdeb,
-                    'statment':statment,'tot6':tot6,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
-                    'frd1':frd1,'tod1':tod1,'received':received,'comments': comments,'total_balance_sum':total_balance_sum,
+                    'statment':statment,'tot6':total_balance,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
+                    'frd1':frd1,'tod1':tod1,'comments': comments,
 
                 }
         return render(request,'app1/viewvendor.html',context)

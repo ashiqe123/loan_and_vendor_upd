@@ -79,7 +79,7 @@ input[name="service-city"] {
                                     <label for="validationCustom02">Vendor</label>
                                     <div class="d-flex"  >
                                       
-<select class="form-control select2 vendor " data-width="100%" id="selected" style="background-color: #243e54; color: white;">
+<select class="form-control select2 vendor " data-width="100%" name="vendor" id="selected" style="background-color: #243e54; color: white;">
     <option selected disabled hidden>Select Vendor</option>
     {% for v in vndr %}
     <option value="{{ v.firstname }} {{ v.lastname }}" data-tokens="{{ v.firstname }} {{ v.lastname }}" >{{ v.firstname }} {{ v.lastname }}</option>

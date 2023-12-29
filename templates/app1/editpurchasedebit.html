@@ -1087,7 +1087,7 @@
                                     
                                         <label for="validationCustom01">Select Vendor</label>
                                         <!-- <input type="text"  name="vendor" class="form-control"> -->
-                                        <select class="form-control select2 vendor " data-width="100%" id="selected" style="background-color: #243e54; color: white;">
+                                        <select class="form-control select2 vendor " name="vendor" data-width="100%" id="selected" style="background-color: #243e54; color: white;">
                                             <option selected disabled value="{{ pdebt.vendor }}" hidden> {{ pdebt.vendor }}</option>
                                             {% for v in vndr %}
                                             <option value="{{ v.firstname }} {{ v.lastname }}" data-tokens="{{ v.firstname }} {{ v.lastname }}" >{{ v.firstname }} {{ v.lastname }}</option>
