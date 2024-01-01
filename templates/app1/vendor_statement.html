@@ -145,11 +145,11 @@
                     <div class="collapse navbar-collapse tab" id="navbarSupportedContent">
                         <ul class="navbar-nav mr-auto">
                             <li class="nav-item">
-                                <a class="nav-link btn " role="button" onclick="Details()" style="color: white;"><i class="fa fa-info-circle" style="font-size: large;">&nbsp;Overview</i><span class="sr-only">(current)</span></a>
+                                <a class="nav-link btn " role="button" href="{% url 'viewvendor' vndr.vendorid  %}"  style="color: white;"><i class="fa fa-info-circle" style="font-size: large;">&nbsp;Overview</i><span class="sr-only">(current)</span></a>
                             </li>
                             
                             <li class="nav-item">
-                                <a class="nav-link btn " role="button" onclick="transaction()" style="color: white;"><i class="fa fa-stack-exchange" style="font-size: large;">&nbsp;Transactions</i></a>
+                                <a class="nav-link btn " role="button" href="{% url 'viewvendor' vndr.vendorid  %}" style="color: white;"><i class="fa fa-stack-exchange" style="font-size: large;">&nbsp;Transactions</i></a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link btn " role="button" onclick="Statment()" style="color: white;"><i class="fa fa-tasks" style="font-size: large;">&nbsp;Statement</i></a>
@@ -168,7 +168,7 @@
                                         <i class="fa fa-share" style="font-size: medium;padding: 10px;">&nbsp;Share</i>
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="shareDropdown" style="background-color: black;">
-                                        <a class="dropdown-item" style="color: white; cursor: pointer;" onclick="shareViaWhatsApp()">WhatsApp</a>
+                                        <a class="dropdown-item" style="color: white; cursor: pointer;" onclick="shareViaWhatsApp()" href="https://web.whatsapp.com/">WhatsApp</a>
                                         <a class="dropdown-item" style="color: white; cursor: pointer;" data-target="#shareBillEmail" data-toggle="modal">Email</a>
                                     </div>
                                 </div>
@@ -1250,8 +1250,8 @@
             <form action="{% url 'VendorStatement_mail' vndr.vendorid %}" method="post" class="needs-validation"
               id="share_to_email_form" autocomplete="off">
               {% csrf_token %}
-              <input name="FromD" class="inputdate form-control"  id="date1"  type="date"   >
-              <input name="ToD" class="inputdate form-control"  id="date2" type="date" >
+              <input name="FromD" class="inputdate form-control"  id="date1"  type="date" hidden  >
+              <input name="ToD" class="inputdate form-control"  id="date2" type="date" hidden >
               <div class="form-group">
                 
                 <label for="emailIds">Email IDs</label>

@@ -1382,7 +1382,7 @@ urlpatterns = [
     path('vendor_check',views.vendor_check,name='vendor_check'),
     path('vendor_check_name',views.vendor_check_name,name='vendor_check_name'),
     path('VendorStatement_mail/<int:id>',views.VendorStatement_mail,name='VendorStatement_mail'),
-    path('vendor_statement/<int:id>',views.vendor_statement,name="vendor_statement")
+    path('vendor_statement/<int:id>',views.vendor_statement,name="vendor_statement"),
 
  
 ]

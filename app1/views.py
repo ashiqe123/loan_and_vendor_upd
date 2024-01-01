@@ -50720,127 +50720,6 @@ def itemdata_qty_edit(request):
                             else:
                                 return JsonResponse({'msg':"no message",'quantity1':item_quantity})
             
-
-def save_account(request):
-    account_holder = BankAccountHolder.objects.get(id=request.session['uid'])
-    if request.method == "POST":
-        account_name = request.POST.get("account_name")
-        account_number = request.POST.get("account_number")
-        ifsc_code = request.POST.get("ifsc_code")
-        swift_code = request.POST.get("swift_code")
-        bank_name = request.POST.get("bank_name")
-        branch_name = request.POST.get("branch_name")
-        name = request.POST.get('name')
-        alias = request.POST.get('alias')
-        phone_number = request.POST.get('phone_number')
-        email = request.POST.get('email')
-        account_type = request.POST.get('account_type')
-        mailing_name = request.POST.get('mailing_name')
-        address = request.POST.get('address')
-        country = request.POST.get('country')
-        state = request.POST.get('state')
-        pin = request.POST.get('pin')
-        date = request.POST.get('date')
-        amount = request.POST.get('amount')
-        pan_it_number = request.POST.get('pan_it_number')
-        registration_type = request.POST.get('registration_type')
-        gstin_un = request.POST.get('gstin_un')
-        set_alter_gst_details = request.POST.get('set_alter_gst_details')
-        set_cheque_book_range = request.POST.get('set_cheque_book_range')
-        enable_cheque_printing = request.POST.get('enable_cheque_printing')
-        set_cheque_printing_configuration = request.POST.get('set_cheque_printing_configuration')
-    
-        print(
-        account_name,
-        account_number,
-        ifsc_code,
-        swift_code,
-        bank_name,
-        branch_name,
-        name,
-        alias,
-        phone_number,
-        email,
-        account_type,
-        set_cheque_book_range,
-        enable_cheque_printing,
-        set_cheque_printing_configuration,
-        pan_it_number,
-        registration_type,
-        gstin_un,
-        set_alter_gst_details,
-        mailing_name,
-        address,
-        country,
-        state,
-        pin,
-        date,
-        amount,)
-        # Create BankAccountHolder instance
-        account_holder = BankAccountHolder(
-            name=name,
-            alias=alias,
-            phone_number=phone_number,
-            email=email,
-            account_type=account_type,
-        )
-        account_holder.save()
-
-        # Create BankAccount instance with the related BankAccountHolder
-        account = BankAccount(
-            holder=account_holder,
-            holder_name=account_name,
-            account_number=account_number,
-            ifsc_code=ifsc_code,
-            swift_code=swift_code,
-            bank_name=bank_name,
-            branch_name=branch_name,
-        )
-        account.save()
-        # Create MailingAddress instance with the related BankAccountHolder
-        mailing_address = MailingAddress(
-            holder=account_holder,
-            mailing_name=mailing_name,
-            address=address,
-            country=country,
-            state=state,
-            pin=pin,
-        )
-        mailing_address.save()
-
-        # Create OpeningBalance instance with the related BankAccountHolder
-        opening_balance = OpeningBalance(
-            holder=account_holder,
-            date=date,
-            amount=amount,
-        )
-        opening_balance.save()
-        
-
-        # Create BankingDetails instance with the related BankAccountHolder
-        bank_details = BankingDetails(
-            holder=account_holder,
-            pan_it_number=pan_it_number,
-            registration_type=registration_type,
-            gstin_un=gstin_un,
-            set_alter_gst_details = True if set_cheque_book_range == "Yes" else False,
-        )
-        bank_details.save()
-        
-        # Create BankConfiguration instance with the related BankAccountHolder
-        account_configuration = BankConfiguration(
-            holder=account_holder,
-            set_cheque_book_range = True if set_cheque_book_range == "Yes" else False,
-            enable_cheque_printing = True if enable_cheque_printing == "Yes" else False,
-            set_cheque_printing_configuration = True if set_cheque_printing_configuration == "Yes" else False,
-
-        )
-        account_configuration.save()
-        
-
-        return JsonResponse({"status": "success"})
-    else:
-        return JsonResponse({"status": "error"})
 def account_dropdown(request):
     # Fetch the account data from the database
     accounts = BankAccount.objects.all()
@@ -51275,7 +51154,7 @@ def create_loan(request):
     cmp1 = company.objects.get(id=request.session["uid"])
     loan = loan_account.objects.filter(cid=cmp1)
     bank = bankings_G.objects.filter(cid=cmp1)
-    accounts = BankAccount.objects.all()
+    accounts = BankAccount.objects.filter(cid=cmp1)
 
     # Get the current date
     current_date = date.today().strftime('%Y-%m-%d')
@@ -51469,33 +51348,6 @@ def create_loan_account(request):
     
     return redirect('loan')
     
-def loan_list(request,id):
-    global loan_id_global
-    loan_id_global = id
-    cid = company.objects.get(id=request.session["uid"])
-    print('sdgx  '+' '+ str(loan_id_global))
-    cmp1 = company.objects.get(id=request.session["uid"])
-    loan=loan_account.objects.get(id=id)
-    loan_tr=loan_transaction.objects.filter(loan_id=id)
-    bnk_name = loan.account_name
-    bnk_acc = BankAccountHolder.objects.get(name=bnk_name)
-    bnk_det = BankAccount.objects.get(holder=bnk_acc)
-    print(bnk_name)
-    print(loan)
-    context={
-        'cmp1':cmp1,
-        'loan':loan,
-        
-        'cid':cid,
-        'loan_tr':loan_tr,
-        'loan_id_global':loan_id_global,
-        'bnk_acc':bnk_acc,
-        'bnk_det':bnk_det,
-
-        
-        }
-    return render(request,'app1/loan_list.html',context)
-
 
     
 
@@ -52439,178 +52291,6 @@ def createexpense(request):
 
 
 
-@login_required(login_url='regcomp')
-def viewvendor(request, id):
-    if 'uid' in request.session:
-        if request.session.has_key('uid'):
-            uid = request.session['uid']
-        else:
-            return redirect('/')
-        cmp1 = company.objects.get(id=request.session['uid'])
-        vndr=vendor.objects.get(vendorid=id) 
-        fn =vndr.firstname
-        ln = vndr.lastname
-        su = fn+ ' ' +ln
-        toda = date.today()
-        tod = toda.strftime("%Y-%m-%d")
-    if request.method == 'POST':
-        sdate = request.GET.get('sdate')
-        edate = request.GET.get('edate')
-        print(sdate)
-        print('done')
-        pbill = purchasebill.objects.filter(vendor_name=su,status='Approved',date=tod)
-        pymnt = purchasepayment.objects.filter(vendor=su, paymentdate=tod)
-
-
-        statment, frd1, tod1 = get_vendor_statement(request, su, cmp1)   
-        
-        tot6 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
-        tot3 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
-        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('amtcredit'))
-        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('paymentamount')) 
-        tot2 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
-        tot4 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance'))
-        tot5 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('paid_amount'))
-        tot8 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('balance_amount'))
-
-        # Corrected total balance calculation
-        total_balance = (float(tot6['t2'] or 0) +float(tot1['t2'] or 0) +float(tot4['t2'] or 0) +float(tot8['t2'] or 0))
-
-
-
-        pbl = purchasebill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
-        paymnt = purchasepayment.objects.filter(vendor=su,cid_id=cmp1).all()  
-        pdeb = purchasedebit.objects.filter(vendor=su,cid_id=cmp1).all()  
-        expnc = purchase_expense.objects.filter(vendor=su,cid_id=cmp1).all()   
-        pordr =purchaseorder.objects.filter(vendor_name=su,cid_id=cmp1).all() 
-        rec =recurring_bill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
-
-        combined_data=[]
-
-        for item in pbl:
-            Type='Bill'
-            Number=int(item.bill_no)
-            Date=item.date
-            Total=int(item.grand_total)
-            Balance=int(item.balance_amount) if item.balance_amount is not None else 0
-            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance,
-                'paid':paid_amount,
-
-
-            })
-
-        for item in rec:
-            Type='Recurring Bill'
-            Number=item.billno
-            Date=item.start_date
-            Total=int(item.grand_total)
-            Balance=int(item.balance)
-            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance,
-                'paid':paid_amount,
-
-            })    
-
-
-
-        for item in pordr:
-            Type='Purchase Order'
-            Number=int(item.puchaseorder_no)
-            Date=item.date
-            Total=int(item.grand_total)
-            Balance=int(item.balance_amount)
-            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance,
-                'paid':paid_amount,
-
-            })    
-
-        for item in paymnt:
-            Type='Payment'
-            Number=int(item.pymntid)
-            Date=item.paymentdate
-            Total = int(item.paymentamount) if item.paymentamount else 0
-            paid = int(item.amtreceived) if item.amtreceived else 0
-            bal = int(item.paymentamount) - int(item.amtreceived) if item.amtreceived else 0
-            
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':bal,
-                'paid':paid,
-
-            }) 
-
-        for item in pdeb:
-            Type='Debit Note'
-            Number=int(item.debit_no)
-            Date=item.debitdate
-            Total=int(item.grandtotal)
-            Balance=float(item.balance_amount)
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'Balance':Balance,
-                'paid':0
-
-            })    
-
-          
-        for item in expnc:
-            Type='Expense'
-            Number=int(item.expense_no)
-            Date=item.date 
-            Total=int(item.amount)
-            Balance=Total
-
-            combined_data.append({
-                'Type':Type,
-                'Number':Number,
-                'Date':Date,
-                'Total':Total,
-                'paid':0,
-                'Balance':0
-
-            })                 
-
-        comments = VendorComment.objects.filter(vendor=vndr)
-        print(comments)
-
-        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'tod':tod,'re':re,
-                    'pymnt':pymnt,'pbl':pbl,'paymnt':paymnt,'pordr':pordr,'expnc':expnc,'pdeb':pdeb,
-                    'statment':statment,'tot6':total_balance,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
-                    'frd1':frd1,'tod1':tod1,'comments': comments,
-
-                }
-        return render(request,'app1/viewvendor.html',context)
-    return redirect('viewvendor') 
-
-
 
 
 
@@ -52948,7 +52628,7 @@ def VendorStatement_mail(request,id):
                     email.attach(filename, pdf, "application/pdf")
                     email.send(fail_silently=False)
 
-                    messages.success(request, 'Loan statement has been shared via email successfully..!')
+                    messages.success(request, 'Vendor statement has been shared via email successfully..!')
                     return redirect('viewvendor',id)
             except Exception as e:
                 messages.error(request, f'Error while sending report: {e}')
@@ -53262,3 +52942,349 @@ def vendor_statement(request,id):
                 }
 
     return render(request,'app1/vendor_statement.html',context)
+
+    
+def create_loan(request):
+    cmp1 = company.objects.get(id=request.session["uid"])
+    loan = loan_account.objects.filter(cid=cmp1)
+    bank = bankings_G.objects.filter(cid=cmp1)
+    accounts = BankAccount.objects.filter(cid=cmp1)
+
+    # Get the current date
+    current_date = date.today().strftime('%Y-%m-%d')
+
+    context = {
+        'cmp1': cmp1,
+        'loan': loan,
+        'bank': bank,
+        'accounts': accounts,
+        'current_date': current_date,
+    }
+
+    return render(request, 'app1/loan_creat.html', context)
+
+
+
+def save_account(request):
+    cmp = company.objects.get(id = request.user.id)
+
+    if request.method == "POST":
+
+        account_name = request.POST.get("account_name")
+        account_number = request.POST.get("account_number")
+        ifsc_code = request.POST.get("ifsc_code")
+        swift_code = request.POST.get("swift_code")
+        bank_name = request.POST.get("bank_name")
+        branch_name = request.POST.get("branch_name")
+        name = request.POST.get('name')
+        alias = request.POST.get('alias')
+        phone_number = request.POST.get('phone_number')
+        email = request.POST.get('email')
+        account_type = request.POST.get('account_type')
+        mailing_name = request.POST.get('mailing_name')
+        address = request.POST.get('address')
+        country = request.POST.get('country')
+        state = request.POST.get('state')
+        pin = request.POST.get('pin')
+        date = request.POST.get('date')
+        amount = request.POST.get('amount')
+        pan_it_number = request.POST.get('pan_it_number')
+        registration_type = request.POST.get('registration_type')
+        gstin_un = request.POST.get('gstin_un')
+        set_alter_gst_details = request.POST.get('set_alter_gst_details')
+        set_cheque_book_range = request.POST.get('set_cheque_book_range')
+        enable_cheque_printing = request.POST.get('enable_cheque_printing')
+        set_cheque_printing_configuration = request.POST.get('set_cheque_printing_configuration')
+        cid = cmp
+        print(
+        account_name,
+        account_number,
+        ifsc_code,
+        swift_code,
+        bank_name,
+        branch_name,
+        name,
+        alias,
+        phone_number,
+        email,
+        account_type,
+        set_cheque_book_range,
+        enable_cheque_printing,
+        set_cheque_printing_configuration,
+        pan_it_number,
+        registration_type,
+        gstin_un,
+        set_alter_gst_details,
+        mailing_name,
+        address,
+        country,
+        state,
+        pin,
+        date,
+        amount,)
+        # Create BankAccountHolder instance
+        account_holder = BankAccountHolder(
+            name=name,
+            alias=alias,
+            phone_number=phone_number,
+            email=email,
+            account_type=account_type,
+            cid = cmp
+        )
+        account_holder.save()
+
+        # Create BankAccount instance with the related BankAccountHolder
+        account = BankAccount(
+            holder=account_holder,
+            holder_name=account_name,
+            account_number=account_number,
+            ifsc_code=ifsc_code,
+            swift_code=swift_code,
+            bank_name=bank_name,
+            branch_name=branch_name,
+            cid = cmp
+        )
+        account.save()
+        # Create MailingAddress instance with the related BankAccountHolder
+        mailing_address = MailingAddress(
+            holder=account_holder,
+            mailing_name=mailing_name,
+            address=address,
+            country=country,
+            state=state,
+            pin=pin,
+        )
+        mailing_address.save()
+
+        # Create OpeningBalance instance with the related BankAccountHolder
+        opening_balance = OpeningBalance(
+            holder=account_holder,
+            date=date,
+            amount=amount,
+        )
+        opening_balance.save()
+        
+
+        # Create BankingDetails instance with the related BankAccountHolder
+        bank_details = BankingDetails(
+            holder=account_holder,
+            pan_it_number=pan_it_number,
+            registration_type=registration_type,
+            gstin_un=gstin_un,
+            set_alter_gst_details = True if set_cheque_book_range == "Yes" else False,
+        )
+        bank_details.save()
+        
+        # Create BankConfiguration instance with the related BankAccountHolder
+        account_configuration = BankConfiguration(
+            holder=account_holder,
+            set_cheque_book_range = True if set_cheque_book_range == "Yes" else False,
+            enable_cheque_printing = True if enable_cheque_printing == "Yes" else False,
+            set_cheque_printing_configuration = True if set_cheque_printing_configuration == "Yes" else False,
+
+        )
+        account_configuration.save()
+        
+
+        return JsonResponse({"status": "success"})
+    else:
+        return JsonResponse({"status": "error"})
+
+
+def loan_list(request,id):
+    global loan_id_global
+    loan_id_global = id
+    cid = company.objects.get(id=request.session["uid"])
+    print('sdgx  '+' '+ str(loan_id_global))
+    cmp1 = company.objects.get(id=request.session["uid"])
+    loan=loan_account.objects.get(id=id)
+    loan_tr=loan_transaction.objects.filter(loan_id=id)
+    bnk_name = loan.account_name
+    bnk_acc = BankAccountHolder.objects.get(name=bnk_name,cid=cid)
+    bnk_det = BankAccount.objects.get(holder=bnk_acc,cid=cid)
+    print(bnk_name)
+    print(loan)
+    context={
+        'cmp1':cmp1,
+        'loan':loan,
+        
+        'cid':cid,
+        'loan_tr':loan_tr,
+        'loan_id_global':loan_id_global,
+        'bnk_acc':bnk_acc,
+        'bnk_det':bnk_det,
+
+        
+        }
+    return render(request,'app1/loan_list.html',context)
+
+
+
+
+@login_required(login_url='regcomp')
+def viewvendor(request, id):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        cmp1 = company.objects.get(id=request.session['uid'])
+        vndr=vendor.objects.get(vendorid=id) 
+        fn =vndr.firstname
+        ln = vndr.lastname
+        su = fn+ ' ' +ln
+        toda = date.today()
+        tod = toda.strftime("%Y-%m-%d")
+
+
+        pbill = purchasebill.objects.filter(vendor_name=su,status='Approved',date=tod)
+        pymnt = purchasepayment.objects.filter(vendor=su, paymentdate=tod)
+
+
+        statment, frd1, tod1 = get_vendor_statement(request, su, cmp1)   
+        
+        tot6 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance_amount'))
+        tot3 = purchasebill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot1 = purchasepayment.objects.filter(vendor=su).all().aggregate(t2=Sum('amtcredit'))
+        tot7 = purchasepayment.objects.filter(vendor=su).all().aggregate(t3=Sum('paymentamount')) 
+        tot2 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('paid_amount'))
+        tot4 = recurring_bill.objects.filter(cid=cmp1, vendor_name=su).all().aggregate(t2=Sum('balance'))
+        tot5 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('paid_amount'))
+        tot8 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('balance_amount'))
+
+        # Corrected total balance calculation
+        total_balance = (float(tot6['t2'] or 0) +float(tot1['t2'] or 0) +float(tot4['t2'] or 0) +float(tot8['t2'] or 0))
+
+
+
+        pbl = purchasebill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+        paymnt = purchasepayment.objects.filter(vendor=su,cid_id=cmp1).all()  
+        pdeb = purchasedebit.objects.filter(vendor=su,cid_id=cmp1).all()  
+        expnc = purchase_expense.objects.filter(vendor=su,cid_id=cmp1).all()   
+        pordr =purchaseorder.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+        rec =recurring_bill.objects.filter(vendor_name=su,cid_id=cmp1).all() 
+
+        combined_data=[]
+
+        for item in pbl:
+            Type='Bill'
+            Number=int(item.bill_no)
+            Date=item.date
+            Total=int(item.grand_total)
+            Balance=int(item.balance_amount) if item.balance_amount is not None else 0
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+
+            })
+
+        for item in rec:
+            Type='Recurring Bill'
+            Number=item.billno
+            Date=item.start_date
+            Total=int(item.grand_total)
+            Balance=int(item.balance)
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+            })    
+
+
+
+        for item in pordr:
+            Type='Purchase Order'
+            Number=int(item.puchaseorder_no)
+            Date=item.date
+            Total=int(item.grand_total)
+            Balance=int(item.balance_amount)
+            paid_amount=int(item.paid_amount) if item.paid_amount is not None else 0
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':paid_amount,
+
+            })    
+
+        for item in paymnt:
+            Type='Payment'
+            Number=int(item.pymntid)
+            Date=item.paymentdate
+            Total = int(item.paymentamount) if item.paymentamount else 0
+            paid = int(item.amtreceived) if item.amtreceived else 0
+            bal = int(item.paymentamount) - int(item.amtreceived) if item.amtreceived else 0
+            
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':bal,
+                'paid':paid,
+
+            }) 
+
+        for item in pdeb:
+            Type='Debit Note'
+            Number=int(item.debit_no)
+            Date=item.debitdate
+            Total=int(item.grandtotal)
+            Balance=float(item.balance_amount)
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'Balance':Balance,
+                'paid':0
+
+            })    
+
+          
+        for item in expnc:
+            Type='Expense'
+            Number=int(item.expense_no)
+            Date=item.date 
+            Total=int(item.amount)
+            Balance=Total
+
+            combined_data.append({
+                'Type':Type,
+                'Number':Number,
+                'Date':Date,
+                'Total':Total,
+                'paid':0,
+                'Balance':0
+
+            })                 
+
+        comments = VendorComment.objects.filter(vendor=vndr)
+        print(comments)
+
+        context = {'vndr': vndr,'cmp1': cmp1,'pbill':pbill,'tod':tod,'re':re,
+                    'pymnt':pymnt,'pbl':pbl,'paymnt':paymnt,'pordr':pordr,'expnc':expnc,'pdeb':pdeb,
+                    'statment':statment,'tot6':total_balance,'tot7':tot7,'tot1':tot1,'tot2':tot2,'combined_data':combined_data,
+                    'frd1':frd1,'tod1':tod1,'comments': comments,
+
+                }
+        return render(request,'app1/viewvendor.html',context)
+    return redirect('viewvendor') 
