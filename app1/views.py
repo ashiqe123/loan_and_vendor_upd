@@ -53153,7 +53153,13 @@ def viewvendor(request, id):
         tot8 = purchasedebit.objects.filter(cid=cmp1, vendor=su).all().aggregate(t2=Sum('balance_amount'))
 
         # Corrected total balance calculation
-        total_balance = (float(tot6['t2'] or 0) +float(tot1['t2'] or 0) +float(tot4['t2'] or 0) +float(tot8['t2'] or 0))
+        total_balance = (
+            float(vndr.openingbalance) * (-1 if vndr.opening_balance_type == 'Credit' else 1) +
+
+            float(tot6['t2'] or 0) +
+            float(tot1['t2'] or 0) +
+            float(tot4['t2'] or 0) +
+            float(tot8['t2'] or 0) )
 
 
 

@@ -89,7 +89,7 @@
                             
                         
                         <a class="fa fa-print mt-3" style="padding: 10px; cursor: pointer;"  href="{% url 'loan_pdf' ids %}" > PDF</a>
-                        <a class="fa fa-print mt-3" style="padding: 10px; cursor: pointer;"  onclick="printSpecificArea()" > Print</a>
+                        <a class="fa fa-print mt-3" style="padding: 10px; cursor: pointer;"  onclick="printStatement()" > Print</a>
         
                          
                                
@@ -104,16 +104,6 @@
         </div>
 
         <script>
-            function printSpecificArea() {
-                var printContents = document.getElementById("whatToPrint").innerHTML;
-                var originalContents = document.body.innerHTML;
-                
-                document.body.innerHTML = printContents;
-                window.print();
-                
-                document.body.innerHTML = originalContents;
-            }
-
 
             function shareViaWhatsApp() {
                     // Collect data from the table or any other relevant information
@@ -131,6 +121,16 @@
 
             </script>
            
+           <script>
+            function printStatement() {
+                var printContent = document.getElementById('whatToPrint').innerHTML;
+                var originalContent = document.body.innerHTML;
+                document.body.innerHTML = printContent;
+                window.print();
+                document.body.innerHTML = originalContent;
+            }
+        </script>
+            
            <div class="modal fade" id="shareBillEmail">
             <div class="modal-dialog modal-xl">
               <div class="modal-content" style="background: #243e54;border-radius: 20px;">
@@ -300,20 +300,7 @@
                     font-weight: 400;
                 
                 }
-                thead {
-                    color: var(--white);
-                    background: var(--themeColor);
-                }
-                .table td,
-                .table th {
-                    text-align: center;
-                    vertical-align: middle;
-                    color: black;
-                }
-                tr th:first-child,
-                tr td:first-child {
-                    text-align: left;
-                }
+                
                 .media img {
                     height: 60px;
                     width: 60px;
@@ -367,9 +354,7 @@
                     display: inline-block;
                     color: #000000;
                 }
-                table.table-bordered{
-                    color: 1px solid #000;
-                }
+            
                 #sign{
                     border: none;
                     border-bottom: 2px solid #000;
@@ -396,59 +381,18 @@
                 }
 
             </style>
-            <style>
-              @media print {
-    body {
-        background-color: white;
-    }
-
-    .page {
-        box-shadow: none;
-        border: 1px solid #ccc;
-        margin: 0;
-        padding: 20px;
-    }
-
-    /* Adjust font size for print */
-    h2, h5 {
-        font-size: 18px;
-    }
-
-    /* Remove unnecessary elements for print */
-    .btn-group, .dropdown, .fa-print {
-        display: none;
-    }
-
-    /* Adjust table styles for print */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        padding-left: 130px;
-    }
-
-    th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
-    .ribbon-open{
-        visibility: hidden;
-    }
-    /* Adjust other styles as needed */
-}
-            </style>
+            
                 <div class="my-5 page" size="A4"  >
                     <div class="p-5">
                         <div id="ember2512" class="tooltip-container ember-view ribbon text-ellipsis">
-                            <div class="ribbon-inner ribbon-open">Statement<!----></div></div>
+                            <div style="color: #000;" class="ribbon-inner ribbon-open text-black">Statement<!----></div></div>
                         <section class="top-content bb d-flex justify-content-between">
                             <div class="logo">
                                 <!-- <img src="logo.png" alt="" class="img-fluid"> -->
                             </div>
                             <div class="top-left">
                                 <div class="graphic-path">
-                                    <p>{{loan.status}}</p>
+                                    <p class="text-black">{{loan.status}}</p>
                                 </div>
                                 <div class="position-relative">
                                 </div>
@@ -505,46 +449,44 @@
             
                        
                         <section class="product-area mt-4">
-                                <table class="table table-responsive-md table-hover mt-4" id="tabletobe">
+                            <table class="table table-hover" style="width: 100%;">
                                     <thead>
                                     <tr>
-                                        <th>SL:NO</th>
+                                        <th style="color: #000;">SL:NO</th>
 
-                                        <th>DATE</th>
-                                        <th>TYPE</th>
-                                        <th>AMOUNT</th>
-                                        <th>INTEREST</th>
+                                        <th style="color: #000;">DATE</th>
+                                        <th style="color: #000;">TYPE</th>
+                                        <th style="color: #000;">AMOUNT</th>
+                                        <th style="color: #000;">INTEREST</th>
                                         <!-- <th>NAME</th>
                                         
                                         <th>DESCRIPTION</th> -->
-                                        <th>TOTAL AMOUNT</th>
-                                        <!-- <th>CLOSING BAL</th> -->
+                                        <th style="color: #000;">CLOSING BAL</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                    
                                {% for a in bnk %}
                                {% if a.loan_amount != 0 %}
-                               <tr >   <td>{{forloop.counter}}</td>           
-                                   <td >{{ a.loan_date }}</td>
+                               <tr >   <td style="color: #000;">{{forloop.counter}}</td>           
+                                   <td style="color: #000;" >{{ a.loan_date }}</td>
                                    {% if a.bank_type == 'PROCESSING FEE' %}
-                                               <td >{{ a.bank_type }}</td>
+                                               <td style="color: #000;">{{ a.bank_type }}</td>
                                                {% elif a.bank_type == 'OPENING BAL' %}
-                                               <td >{{ a.bank_type }}</td>
+                                               <td style="color: #000;">{{ a.bank_type }}</td>
                                                {% elif a.bank_type == 'EMI PAID' %}
-                                               <td >{{ a.bank_type }}</td>
+                                               <td style="color: #000;">{{ a.bank_type }}</td>
                                                {% elif a.bank_type == 'ADDITIONAL LOAN ISSUED' %}
-                                               <td >{{ a.bank_type }}</td>
+                                               <td style="color: #000;">{{ a.bank_type }}</td>
    
                                                {% endif %}
                                                <!-- <td >{{ a.loan_desc }}</td> -->
                                                
                                                
                                                
-                                               <td>{{a.loan_amount}}</td>
-                                               <td>{{a.loan_intrest|default:0}}</td>
-               
-                                               <td>{{a.total}}</td>                 <!-- <td>{{a.balance}}</td> -->
+                                               <td style="color: #000;">{{a.loan_amount}}</td>
+                                               <td style="color: #000;">{{a.loan_intrest|default:0}}</td>
+                                                <td style="color: #000;">{{a.balance}}</td>
 
                                         </tr>
                                        
