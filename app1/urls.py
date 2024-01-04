@@ -1384,6 +1384,6 @@ urlpatterns = [
     path('VendorStatement_mail/<int:id>',views.VendorStatement_mail,name='VendorStatement_mail'),
     path('vendor_statement/<int:id>',views.vendor_statement,name="vendor_statement"),
     path('loan_check',views.loan_check,name='loan_check'),
-
+sfsdfsdf
  
 ]
